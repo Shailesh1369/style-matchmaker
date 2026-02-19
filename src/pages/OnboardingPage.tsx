@@ -7,14 +7,28 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Camera, Upload, ChevronRight, ChevronLeft, Check, X } from "lucide-react";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
-const BODY_SHAPES = [
+const GENDERS = [
+  { id: "female", label: "Female", emoji: "👩" },
+  { id: "male", label: "Male", emoji: "👨" },
+  { id: "non_binary", label: "Non-Binary", emoji: "🧑" },
+];
+
+const BODY_SHAPES_FEMALE = [
   { id: "hourglass", label: "Hourglass", emoji: "⌛", desc: "Defined waist, balanced bust & hips" },
   { id: "pear", label: "Pear", emoji: "🍐", desc: "Hips wider than shoulders" },
   { id: "apple", label: "Apple", emoji: "🍎", desc: "Fuller midsection, slimmer legs" },
   { id: "rectangle", label: "Rectangle", emoji: "▭", desc: "Balanced, athletic proportions" },
   { id: "inverted_triangle", label: "Inverted Triangle", emoji: "🔺", desc: "Broad shoulders, narrow hips" },
+];
+
+const BODY_SHAPES_MALE = [
+  { id: "athletic", label: "Athletic / V-Shape", emoji: "🏋️", desc: "Broad shoulders, narrow waist" },
+  { id: "rectangle", label: "Rectangle", emoji: "▭", desc: "Balanced, straight proportions" },
+  { id: "oval", label: "Oval", emoji: "🥚", desc: "Fuller midsection, slimmer limbs" },
+  { id: "trapezoid", label: "Trapezoid", emoji: "🔷", desc: "Wide shoulders, tapered waist" },
+  { id: "inverted_triangle", label: "Inverted Triangle", emoji: "🔺", desc: "Very broad shoulders, slim hips" },
 ];
 
 const SKIN_TONES = [
@@ -26,10 +40,16 @@ const SKIN_TONES = [
   { id: "rich", label: "Rich", color: "#4A2C17" },
 ];
 
-const STYLE_KEYWORDS = [
+const STYLE_KEYWORDS_FEMALE = [
   "Streetwear", "Minimalist", "Boho", "Elegant", "Y2K",
   "Office Chic", "Cottagecore", "Athleisure", "Vintage", "Romantic",
   "Preppy", "Edgy", "Coastal", "Dark Academia", "Maximalist"
+];
+
+const STYLE_KEYWORDS_MALE = [
+  "Streetwear", "Minimalist", "Smart Casual", "Business", "Techwear",
+  "Athleisure", "Vintage", "Preppy", "Edgy", "Coastal",
+  "Dark Academia", "Old Money", "Hypebeast", "Workwear", "Military"
 ];
 
 interface OnboardingPageProps {
@@ -39,6 +59,7 @@ interface OnboardingPageProps {
 export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const { user } = useAuth();
   const [step, setStep] = useState<Step>(1);
+  const [gender, setGender] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [cameraMode, setCameraMode] = useState(false);
@@ -51,6 +72,9 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const bodyShapes = gender === "male" ? BODY_SHAPES_MALE : BODY_SHAPES_FEMALE;
+  const styleKeywordOptions = gender === "male" ? STYLE_KEYWORDS_MALE : STYLE_KEYWORDS_FEMALE;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,6 +121,13 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     );
   };
 
+  // Reset body shape and keywords when gender changes
+  const handleGenderSelect = (g: string) => {
+    setGender(g);
+    setBodyShape("");
+    setStyleKeywords([]);
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
@@ -117,6 +148,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
       const { error } = await supabase.from("profiles").upsert({
         user_id: user.id,
         display_name: user.user_metadata?.display_name || "",
+        gender,
         body_shape: bodyShape,
         height_cm: height ? parseInt(height) : null,
         skin_tone: skinTone,
@@ -134,16 +166,19 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     }
   };
 
+  const TOTAL_STEPS = 5;
+
   const canProceed = () => {
-    if (step === 1) return true; // photo is optional
-    if (step === 2) return !!bodyShape;
-    if (step === 3) return !!skinTone && !!height;
-    if (step === 4) return styleKeywords.length >= 1;
+    if (step === 1) return !!gender;
+    if (step === 2) return true; // photo optional
+    if (step === 3) return !!bodyShape;
+    if (step === 4) return !!skinTone && !!height;
+    if (step === 5) return styleKeywords.length >= 1;
     return false;
   };
 
   const next = () => {
-    if (step < 4) setStep((s) => (s + 1) as Step);
+    if (step < TOTAL_STEPS) setStep((s) => (s + 1) as Step);
     else handleSave();
   };
 
@@ -155,34 +190,64 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
     <div className="min-h-screen gradient-hero flex flex-col">
       {/* Header */}
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground text-sm font-bold">S</span>
+        <div className="w-8 h-8 rounded-xl bg-blush flex items-center justify-center">
+          <span className="text-white text-sm font-bold">S</span>
         </div>
-        <span className="font-black text-xl tracking-tight">StyleMatch</span>
+        <span className="font-black text-xl tracking-tight text-foreground">StyleMatch</span>
       </div>
 
       {/* Progress */}
       <div className="px-6 mb-6">
         <div className="flex gap-2 mb-2">
-          {[1, 2, 3, 4].map((s) => (
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
-              key={s}
+              key={i}
               className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                s <= step ? "bg-blush" : "bg-sand-dark"
+                i + 1 <= step ? "bg-blush" : "bg-sand-dark"
               }`}
             />
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">Step {step} of 4</p>
+        <p className="text-xs text-muted-foreground">Step {step} of {TOTAL_STEPS}</p>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 pb-6 overflow-y-auto">
-        {/* Step 1: Photo */}
+
+        {/* Step 1: Gender */}
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-black mb-2">Add your photo</h1>
+              <h1 className="text-3xl font-black mb-2 text-foreground">Who are we styling?</h1>
+              <p className="text-muted-foreground">Helps us show you the right clothes, shoes & accessories</p>
+            </div>
+            <div className="space-y-3">
+              {GENDERS.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => handleGenderSelect(g.id)}
+                  className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${
+                    gender === g.id
+                      ? "border-blush bg-blush-light"
+                      : "border-border bg-card hover:border-blush/40"
+                  }`}
+                >
+                  <span className="text-3xl">{g.emoji}</span>
+                  <p className="font-bold text-lg text-foreground">{g.label}</p>
+                  {gender === g.id && (
+                    <Check className="w-5 h-5 text-blush ml-auto" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Photo */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-black mb-2 text-foreground">Add your photo</h1>
               <p className="text-muted-foreground">Optional — helps us give better style tips based on your look</p>
             </div>
 
@@ -192,7 +257,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
                   ref={videoRef}
                   autoPlay
                   playsInline
-                  className="w-full rounded-3xl bg-foreground aspect-[3/4] object-cover"
+                  className="w-full rounded-3xl bg-muted aspect-[3/4] object-cover"
                 />
                 <div className="flex gap-3">
                   <Button onClick={capturePhoto} className="flex-1 h-12 rounded-xl bg-blush text-white hover:opacity-90">
@@ -222,7 +287,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
               <div className="space-y-4">
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="w-full aspect-[3/4] max-h-72 rounded-3xl border-2 border-dashed border-blush bg-blush-light flex flex-col items-center justify-center gap-4 hover:bg-blush/10 transition-colors"
+                  className="w-full aspect-[3/4] max-h-72 rounded-3xl border-2 border-dashed border-blush bg-blush-light flex flex-col items-center justify-center gap-4 hover:border-blush/80 transition-colors"
                 >
                   <div className="w-16 h-16 rounded-2xl bg-blush/20 flex items-center justify-center">
                     <Upload className="w-8 h-8 text-blush" />
@@ -245,15 +310,15 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
           </div>
         )}
 
-        {/* Step 2: Body Shape */}
-        {step === 2 && (
+        {/* Step 3: Body Shape */}
+        {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-black mb-2">Your body shape</h1>
+              <h1 className="text-3xl font-black mb-2 text-foreground">Your body shape</h1>
               <p className="text-muted-foreground">Select what resonates most with you</p>
             </div>
             <div className="space-y-3">
-              {BODY_SHAPES.map((shape) => (
+              {bodyShapes.map((shape) => (
                 <button
                   key={shape.id}
                   onClick={() => setBodyShape(shape.id)}
@@ -265,7 +330,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 >
                   <span className="text-3xl">{shape.emoji}</span>
                   <div>
-                    <p className="font-bold">{shape.label}</p>
+                    <p className="font-bold text-foreground">{shape.label}</p>
                     <p className="text-sm text-muted-foreground">{shape.desc}</p>
                   </div>
                   {bodyShape === shape.id && (
@@ -277,43 +342,43 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
           </div>
         )}
 
-        {/* Step 3: Height & Skin Tone */}
-        {step === 3 && (
+        {/* Step 4: Height & Skin Tone */}
+        {step === 4 && (
           <div className="space-y-8">
             <div>
-              <h1 className="text-3xl font-black mb-2">Your details</h1>
+              <h1 className="text-3xl font-black mb-2 text-foreground">Your details</h1>
               <p className="text-muted-foreground">Helps tailor fabric and proportions</p>
             </div>
 
             <div className="space-y-2">
-              <Label className="font-semibold">Height (cm)</Label>
+              <Label className="font-semibold text-foreground">Height (cm)</Label>
               <Input
                 type="number"
-                placeholder="e.g. 165"
+                placeholder="e.g. 175"
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
-                className="h-12 rounded-xl"
+                className="h-12 rounded-xl bg-card border-border text-foreground"
                 min="100"
                 max="250"
               />
             </div>
 
             <div className="space-y-3">
-              <Label className="font-semibold">Skin Tone</Label>
+              <Label className="font-semibold text-foreground">Skin Tone</Label>
               <div className="grid grid-cols-3 gap-3">
                 {SKIN_TONES.map((tone) => (
                   <button
                     key={tone.id}
                     onClick={() => setSkinTone(tone.id)}
                     className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${
-                      skinTone === tone.id ? "border-blush" : "border-border"
+                      skinTone === tone.id ? "border-blush bg-blush-light" : "border-border bg-card"
                     }`}
                   >
                     <div
-                      className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                      className="w-10 h-10 rounded-full border-2 border-white/20 shadow-md"
                       style={{ backgroundColor: tone.color }}
                     />
-                    <span className="text-xs font-medium">{tone.label}</span>
+                    <span className="text-xs font-medium text-foreground">{tone.label}</span>
                     {skinTone === tone.id && (
                       <Check className="w-3 h-3 text-blush -mt-1" />
                     )}
@@ -324,15 +389,15 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
           </div>
         )}
 
-        {/* Step 4: Style Keywords */}
-        {step === 4 && (
+        {/* Step 5: Style Keywords */}
+        {step === 5 && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-black mb-2">Your vibe ✨</h1>
+              <h1 className="text-3xl font-black mb-2 text-foreground">Your vibe ✨</h1>
               <p className="text-muted-foreground">Pick styles you love (choose as many as you like)</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              {STYLE_KEYWORDS.map((kw) => (
+              {styleKeywordOptions.map((kw) => (
                 <button
                   key={kw}
                   onClick={() => toggleKeyword(kw)}
@@ -361,7 +426,7 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
           <Button
             onClick={prev}
             variant="outline"
-            className="h-14 w-14 rounded-2xl p-0"
+            className="h-14 w-14 rounded-2xl p-0 border-border"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -369,11 +434,11 @@ export default function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <Button
           onClick={next}
           disabled={!canProceed() || saving}
-          className="flex-1 h-14 rounded-2xl text-base font-bold bg-primary text-primary-foreground hover:opacity-90"
+          className="flex-1 h-14 rounded-2xl text-base font-bold bg-blush text-white hover:opacity-90 disabled:opacity-40"
         >
-          {saving ? "Saving..." : step === 4 ? "Find My Style 🎉" : (
+          {saving ? "Saving..." : step === TOTAL_STEPS ? "Find My Style 🎉" : (
             <span className="flex items-center gap-2">
-              {step === 1 ? (photoPreview ? "Looks great!" : "Skip for now") : "Continue"}
+              {step === 2 ? (photoPreview ? "Looks great!" : "Skip for now") : "Continue"}
               <ChevronRight className="w-5 h-5" />
             </span>
           )}

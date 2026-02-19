@@ -9,22 +9,38 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { bodyShape, occasions, skinTone, styleKeywords, vibeFilter, heightCm } = await req.json();
+    const { bodyShape, occasions, skinTone, styleKeywords, vibeFilter, heightCm, gender } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const occasionLabels = occasions.join(", ");
     const keywordsStr = (styleKeywords || []).join(", ");
+
     const vibeDesc = {
-      minimal: "clean, minimal, understated — avoid loud patterns or excess accessories",
-      bold: "bold, high-impact, statement pieces — embrace color, patterns, and drama",
-      classic: "timeless, elegant, classic — think tailored cuts and quality basics",
-      trendy: "on-trend, fashion-forward, zeitgeist — current runway influences",
+      minimal: "clean, minimal, understated — avoid loud patterns or excess accessories. Think Bottega Veneta quiet luxury, Toteme, COS.",
+      bold: "bold, high-impact, statement pieces — embrace color, patterns, and drama. Think Valentino, Versace, Off-White.",
+      classic: "timeless, elegant, classic — tailored cuts and quality basics. Think Ralph Lauren, Brunello Cucinelli, The Row.",
+      trendy: "on-trend, fashion-forward, zeitgeist — current runway and street style influences. Think what's trending on Pinterest and Instagram right now.",
     }[vibeFilter] || "balanced and versatile";
 
-    const systemPrompt = `You are StyleMatch, a world-class AI fashion stylist with expertise in body-inclusive fashion, color theory, and personal styling. Your recommendations are practical, specific, and empowering. You create looks that celebrate the wearer's unique features.`;
+    // Gender-specific guidance
+    const genderLabel = gender === "male" ? "man" : gender === "female" ? "woman" : "person";
+    const genderPronoun = gender === "male" ? "him/his" : gender === "female" ? "her/hers" : "them/their";
 
-    const userPrompt = `Create 5 curated outfit ideas for someone with the following profile:
+    const footwearGuidance = gender === "male"
+      ? "For footwear, ONLY suggest men's shoes: sneakers, loafers, Chelsea boots, Oxford shoes, derby shoes, monk straps, slides, sandals (men's style), or boots. NEVER suggest heels, pumps, mules, stilettos, wedges, or women's footwear."
+      : gender === "female"
+      ? "For footwear, suggest women's shoes: heels, pumps, mules, sneakers, ankle boots, sandals, loafers, flats, wedges, or stilettos as appropriate."
+      : "For footwear, suggest gender-neutral options: sneakers, boots, loafers, or sandals.";
+
+    const systemPrompt = `You are StyleMatch, a world-class AI fashion stylist with deep expertise in body-inclusive fashion, color theory, and personal styling. You have an encyclopaedic knowledge of fashion from Pinterest boards, Instagram fashion accounts, Vogue editorials, street style blogs, and runway shows. Your recommendations are practical, specific, and empowering — celebrating the wearer's unique features.
+
+CRITICAL RULE: ${footwearGuidance}
+
+Always recommend complete, gender-appropriate outfits for a ${genderLabel}. Every single item — shoes, accessories, bags, belts — must be appropriate for ${genderPronoun}.`;
+
+    const userPrompt = `Create 5 curated outfit ideas for a ${genderLabel} with the following profile:
+- Gender: ${genderLabel}
 - Body shape: ${bodyShape}
 - Height: ${heightCm ? heightCm + "cm" : "not specified"}
 - Skin tone: ${skinTone}
@@ -32,19 +48,24 @@ serve(async (req) => {
 - Occasion(s): ${occasionLabels}
 - Vibe filter: ${vibeDesc}
 
+Draw inspiration from current Pinterest fashion boards, Instagram fashion influencers, and street style photography. Each outfit should feel like it could appear in a real editorial or Instagram fashion post.
+
 Return ONLY a valid JSON array (no markdown, no code blocks) with exactly 5 outfits. Each outfit must follow this exact structure:
 [
   {
-    "name": "outfit name (creative, catchy)",
-    "items": ["item 1", "item 2", "item 3", "item 4"],
+    "name": "outfit name (creative, editorial, catchy)",
+    "items": ["specific item 1 with detail", "specific item 2 with detail", "specific item 3 with detail", "footwear (gender-appropriate)", "optional accessory"],
     "colors": ["#hex1", "#hex2", "#hex3"],
     "colorNames": ["Color Name 1", "Color Name 2", "Color Name 3"],
     "why": "2-3 sentences explaining why this specifically flatters their body shape and suits their skin tone",
-    "occasion": "best occasion for this look"
+    "occasion": "best occasion for this look",
+    "inspiration": "Pinterest/Instagram aesthetic reference (e.g. 'dark academia Pinterest board', 'GRWM minimal aesthetic Instagram')"
   }
 ]
 
-Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics, and silhouettes. Explain WHY each piece flatters the body shape.`;
+IMPORTANT: All items in the "items" array must be 100% appropriate for a ${genderLabel}. ${footwearGuidance}
+
+Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics, and silhouettes. Reference real fashion aesthetics from social media.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -87,7 +108,6 @@ Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics
     // Parse the JSON response
     let outfits;
     try {
-      // Strip any markdown code blocks if present
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       outfits = JSON.parse(cleaned);
     } catch {

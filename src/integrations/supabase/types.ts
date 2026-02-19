@@ -19,6 +19,7 @@ export type Database = {
           body_shape: string | null
           created_at: string
           display_name: string | null
+          gender: string | null
           height_cm: number | null
           id: string
           photo_url: string | null
@@ -31,6 +32,7 @@ export type Database = {
           body_shape?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
           height_cm?: number | null
           id?: string
           photo_url?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           body_shape?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
           height_cm?: number | null
           id?: string
           photo_url?: string | null
