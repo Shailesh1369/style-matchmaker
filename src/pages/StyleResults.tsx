@@ -12,6 +12,7 @@ interface Outfit {
   colorNames: string[];
   why: string;
   occasion: string;
+  inspiration?: string;
 }
 
 interface StyleResultsProps {
@@ -20,6 +21,7 @@ interface StyleResultsProps {
     height_cm: number | null;
     skin_tone: string;
     style_keywords: string[];
+    gender: string | null;
   };
   occasions: string[];
   vibeFilter: string;
@@ -60,6 +62,7 @@ export default function StyleResults({
           styleKeywords: profile.style_keywords,
           vibeFilter,
           heightCm: profile.height_cm,
+          gender: profile.gender,
         },
       });
       if (error) throw error;
@@ -239,6 +242,9 @@ export default function StyleResults({
           <div className="bg-blush-light rounded-2xl p-4 mt-auto">
             <p className="text-xs font-semibold text-blush mb-1">Why it works for you</p>
             <p className="text-sm text-foreground leading-relaxed">{current.why}</p>
+            {current.inspiration && (
+              <p className="text-[10px] text-muted-foreground mt-2 italic">✦ Inspired by: {current.inspiration}</p>
+            )}
           </div>
         </div>
 

@@ -14,6 +14,7 @@ interface Profile {
   height_cm: number | null;
   skin_tone: string;
   style_keywords: string[];
+  gender: string | null;
 }
 
 export default function Index() {
@@ -37,7 +38,7 @@ export default function Index() {
     setCheckingProfile(true);
     const { data } = await supabase
       .from("profiles")
-      .select("body_shape, height_cm, skin_tone, style_keywords")
+      .select("body_shape, height_cm, skin_tone, style_keywords, gender")
       .eq("user_id", user.id)
       .maybeSingle();
     setCheckingProfile(false);
