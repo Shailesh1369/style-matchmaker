@@ -6,8 +6,11 @@ import OnboardingPage from "./OnboardingPage";
 import OccasionSelector from "./OccasionSelector";
 import StyleResults from "./StyleResults";
 import SavedLooksBoard from "./SavedLooksBoard";
+import ProfilePage from "./ProfilePage";
+import CameraAnalysis from "./CameraAnalysis";
+import { User, Camera, Compass, BookmarkCheck } from "lucide-react";
 
-type AppScreen = "auth" | "onboarding" | "occasion" | "results" | "board";
+type AppScreen = "auth" | "onboarding" | "occasion" | "results" | "board" | "profile" | "camera";
 
 interface Profile {
   body_shape: string;
@@ -75,31 +78,86 @@ export default function Index() {
     return <OnboardingPage onComplete={handleOnboardingComplete} />;
   }
 
-  if (screen === "occasion") {
+  // Screens that need bottom nav
+  const showBottomNav = ["occasion", "results", "board", "profile", "camera"].includes(screen);
+
+  const renderContent = () => {
+    if (screen === "profile") {
+      return <ProfilePage onBack={() => setScreen("occasion")} />;
+    }
+    if (screen === "camera" && profile) {
+      return <CameraAnalysis profile={profile} onBack={() => setScreen("occasion")} />;
+    }
+    if (screen === "results" && profile) {
+      return (
+        <StyleResults
+          profile={profile}
+          occasions={occasions}
+          vibeFilter={vibeFilter}
+          onGoToBoard={() => setScreen("board")}
+          onBack={() => setScreen("occasion")}
+        />
+      );
+    }
+    if (screen === "board") {
+      return (
+        <SavedLooksBoard
+          onBack={() => setScreen("results")}
+          onNewSearch={() => setScreen("occasion")}
+        />
+      );
+    }
     return <OccasionSelector onNext={handleOccasionNext} />;
-  }
+  };
 
-  if (screen === "results" && profile) {
-    return (
-      <StyleResults
-        profile={profile}
-        occasions={occasions}
-        vibeFilter={vibeFilter}
-        onGoToBoard={() => setScreen("board")}
-        onBack={() => setScreen("occasion")}
-      />
-    );
-  }
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1 pb-16">
+        {renderContent()}
+      </div>
 
-  if (screen === "board") {
-    return (
-      <SavedLooksBoard
-        onBack={() => setScreen("results")}
-        onNewSearch={() => setScreen("occasion")}
-      />
-    );
-  }
-
-  return <OccasionSelector onNext={handleOccasionNext} />;
+      {showBottomNav && (
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-card/95 backdrop-blur-md border-t border-border">
+          <div className="flex justify-around items-center h-16 max-w-md mx-auto">
+            <button
+              onClick={() => setScreen("occasion")}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
+                screen === "occasion" ? "text-blush" : "text-muted-foreground"
+              }`}
+            >
+              <Compass className="w-5 h-5" />
+              <span className="text-[10px] font-semibold">Explore</span>
+            </button>
+            <button
+              onClick={() => setScreen("camera")}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
+                screen === "camera" ? "text-blush" : "text-muted-foreground"
+              }`}
+            >
+              <Camera className="w-5 h-5" />
+              <span className="text-[10px] font-semibold">Try-On</span>
+            </button>
+            <button
+              onClick={() => setScreen("board")}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
+                screen === "board" ? "text-blush" : "text-muted-foreground"
+              }`}
+            >
+              <BookmarkCheck className="w-5 h-5" />
+              <span className="text-[10px] font-semibold">Saved</span>
+            </button>
+            <button
+              onClick={() => setScreen("profile")}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
+                screen === "profile" ? "text-blush" : "text-muted-foreground"
+              }`}
+            >
+              <User className="w-5 h-5" />
+              <span className="text-[10px] font-semibold">Profile</span>
+            </button>
+          </div>
+        </nav>
+      )}
+    </div>
+  );
 }
-
