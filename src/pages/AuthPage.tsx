@@ -16,11 +16,20 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
+  const [forgotPassword, setForgotPassword] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (forgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent! Check your email ✨");
+        setForgotPassword(false);
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -76,6 +85,36 @@ export default function AuthPage() {
             ))}
           </div>
 
+          {forgotPassword ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <p className="text-sm text-muted-foreground">Enter your email and we'll send you a reset link.</p>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-xl border-border h-12"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 rounded-xl text-base font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                {loading ? "..." : "Send Reset Link ✨"}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                <button type="button" onClick={() => setForgotPassword(false)} className="text-accent font-semibold hover:underline">
+                  Back to Sign In
+                </button>
+              </p>
+            </form>
+          ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
               <div className="space-y-2">
@@ -116,11 +155,14 @@ export default function AuthPage() {
                   className="rounded-xl border-border h-12 pr-12"
                   required
                   minLength={6}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPass((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10"
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -134,17 +176,27 @@ export default function AuthPage() {
             >
               {loading ? "..." : mode === "login" ? "Sign In ✨" : "Create Account ✨"}
             </Button>
+
+            {mode === "login" && (
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                <button type="button" onClick={() => setForgotPassword(true)} className="text-accent font-semibold hover:underline">
+                  Forgot password?
+                </button>
+              </p>
+            )}
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-2">
             {mode === "login" ? "New to StyleMatch?" : "Already have an account?"}{" "}
             <button
               onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              className="text-blush font-semibold hover:underline"
+              className="text-accent font-semibold hover:underline"
             >
               {mode === "login" ? "Sign up free" : "Sign in"}
             </button>
           </p>
+          </>
+          )}
         </div>
       </div>
     </div>
