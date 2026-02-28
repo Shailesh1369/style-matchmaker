@@ -195,6 +195,7 @@ export default function AuthPage() {
               {mode === "login" ? "Sign up free" : "Sign in"}
             </button>
           </p>
+          </>
           )}
         </div>
       </div>
