@@ -177,15 +177,25 @@ export default function AuthPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          {mode === "login" && (
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              <button type="button" onClick={() => setForgotPassword(true)} className="text-accent font-semibold hover:underline">
+                Forgot password?
+              </button>
+            </p>
+          )}
+
+          <p className="text-center text-sm text-muted-foreground mt-2">
             {mode === "login" ? "New to StyleMatch?" : "Already have an account?"}{" "}
             <button
               onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              className="text-blush font-semibold hover:underline"
+              className="text-accent font-semibold hover:underline"
             >
               {mode === "login" ? "Sign up free" : "Sign in"}
             </button>
           </p>
+          </form>
+          )}
         </div>
       </div>
     </div>
