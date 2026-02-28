@@ -114,6 +114,7 @@ export default function AuthPage() {
               </p>
             </form>
           ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
               <div className="space-y-2">
