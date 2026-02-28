@@ -175,15 +175,15 @@ export default function AuthPage() {
             >
               {loading ? "..." : mode === "login" ? "Sign In ✨" : "Create Account ✨"}
             </Button>
-          </form>
 
-          {mode === "login" && (
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              <button type="button" onClick={() => setForgotPassword(true)} className="text-accent font-semibold hover:underline">
-                Forgot password?
-              </button>
-            </p>
-          )}
+            {mode === "login" && (
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                <button type="button" onClick={() => setForgotPassword(true)} className="text-accent font-semibold hover:underline">
+                  Forgot password?
+                </button>
+              </p>
+            )}
+          </form>
 
           <p className="text-center text-sm text-muted-foreground mt-2">
             {mode === "login" ? "New to StyleMatch?" : "Already have an account?"}{" "}
@@ -194,7 +194,6 @@ export default function AuthPage() {
               {mode === "login" ? "Sign up free" : "Sign in"}
             </button>
           </p>
-          </form>
           )}
         </div>
       </div>
