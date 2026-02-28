@@ -85,6 +85,35 @@ export default function AuthPage() {
             ))}
           </div>
 
+          {forgotPassword ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <p className="text-sm text-muted-foreground">Enter your email and we'll send you a reset link.</p>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-xl border-border h-12"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 rounded-xl text-base font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                {loading ? "..." : "Send Reset Link ✨"}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                <button type="button" onClick={() => setForgotPassword(false)} className="text-accent font-semibold hover:underline">
+                  Back to Sign In
+                </button>
+              </p>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
               <div className="space-y-2">
