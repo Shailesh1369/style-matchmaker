@@ -228,11 +228,30 @@ export default function StyleResults({
           {/* Clothing Items */}
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">The Look</p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {current.items.map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blush flex-shrink-0" />
-                  <p className="text-sm font-medium">{item}</p>
+                <div key={i} className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-blush flex-shrink-0" />
+                    <p className="text-sm font-medium">{item}</p>
+                  </div>
+                  <div className="flex gap-1.5 pl-5">
+                    {[
+                      { name: "Myntra", url: `https://www.myntra.com/${encodeURIComponent(item)}` },
+                      { name: "Ajio", url: `https://www.ajio.com/search/?text=${encodeURIComponent(item)}` },
+                      { name: "Amazon", url: `https://www.amazon.in/s?k=${encodeURIComponent(item)}` },
+                    ].map((store) => (
+                      <a
+                        key={store.name}
+                        href={store.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground hover:text-blush hover:border-blush transition-all"
+                      >
+                        {store.name}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
