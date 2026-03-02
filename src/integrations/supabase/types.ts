@@ -25,7 +25,12 @@ export type Database = {
           id: string
           photo_url: string | null
           skin_tone: string | null
+          stripe_customer_id: string | null
           style_keywords: string[] | null
+          subscription_ends_at: string | null
+          subscription_started_at: string | null
+          subscription_status: string
+          subscription_tier: string
           updated_at: string
           user_id: string
         }
@@ -39,7 +44,12 @@ export type Database = {
           id?: string
           photo_url?: string | null
           skin_tone?: string | null
+          stripe_customer_id?: string | null
           style_keywords?: string[] | null
+          subscription_ends_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?: string
+          subscription_tier?: string
           updated_at?: string
           user_id: string
         }
@@ -53,7 +63,12 @@ export type Database = {
           id?: string
           photo_url?: string | null
           skin_tone?: string | null
+          stripe_customer_id?: string | null
           style_keywords?: string[] | null
+          subscription_ends_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?: string
+          subscription_tier?: string
           updated_at?: string
           user_id?: string
         }
