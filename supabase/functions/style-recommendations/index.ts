@@ -23,7 +23,6 @@ serve(async (req) => {
       trendy: "on-trend, fashion-forward, zeitgeist — current runway and street style influences. Think what's trending on Pinterest and Instagram right now.",
     }[vibeFilter] || "balanced and versatile";
 
-    // Gender-specific guidance
     const genderLabel = gender === "male" ? "man" : gender === "female" ? "woman" : "person";
     const genderPronoun = gender === "male" ? "him/his" : gender === "female" ? "her/hers" : "them/their";
 
@@ -33,11 +32,11 @@ serve(async (req) => {
       ? "For footwear, suggest women's shoes: heels, pumps, mules, sneakers, ankle boots, sandals, loafers, flats, wedges, or stilettos as appropriate."
       : "For footwear, suggest gender-neutral options: sneakers, boots, loafers, or sandals.";
 
-    const systemPrompt = `You are StyleMatch, a world-class AI fashion stylist with deep expertise in body-inclusive fashion, color theory, and personal styling. You have an encyclopaedic knowledge of fashion from Pinterest boards, Instagram fashion accounts, Vogue editorials, street style blogs, and runway shows. Your recommendations are practical, specific, and empowering — celebrating the wearer's unique features.
+    const systemPrompt = `You are StyleMatch, a world-class AI fashion stylist with deep expertise in body-inclusive fashion, color theory, and personal styling. You have encyclopaedic knowledge of fashion from Pinterest, Instagram, Vogue, street style, and runway shows. Your recommendations are practical, specific, and empowering.
 
 CRITICAL RULE: ${footwearGuidance}
 
-Always recommend complete, gender-appropriate outfits for a ${genderLabel}. Every single item — shoes, accessories, bags, belts — must be appropriate for ${genderPronoun}.`;
+Always recommend complete, gender-appropriate outfits for a ${genderLabel}. Every single item must be appropriate for ${genderPronoun}.`;
 
     const userPrompt = `Create 5 curated outfit ideas for a ${genderLabel} with the following profile:
 - Gender: ${genderLabel}
@@ -48,24 +47,31 @@ Always recommend complete, gender-appropriate outfits for a ${genderLabel}. Ever
 - Occasion(s): ${occasionLabels}
 - Vibe filter: ${vibeDesc}
 
-Draw inspiration from current Pinterest fashion boards, Instagram fashion influencers, and street style photography. Each outfit should feel like it could appear in a real editorial or Instagram fashion post.
+Return ONLY a valid JSON array (no markdown, no code blocks) with exactly 5 outfits. Each outfit MUST follow this exact structure:
 
-Return ONLY a valid JSON array (no markdown, no code blocks) with exactly 5 outfits. Each outfit must follow this exact structure:
 [
   {
-    "name": "outfit name (creative, editorial, catchy)",
-    "items": ["specific item 1 with detail", "specific item 2 with detail", "specific item 3 with detail", "footwear (gender-appropriate)", "optional accessory"],
+    "name": "creative editorial outfit name",
+    "items": [
+      { "type": "Top", "description": "Specific garment with fabric, cut, color detail" },
+      { "type": "Bottom", "description": "Specific garment with fabric, cut, color detail" },
+      { "type": "Footwear", "description": "Specific gender-appropriate shoe" },
+      { "type": "Accessory", "description": "Watch, bag, belt, jewelry etc." }
+    ],
     "colors": ["#hex1", "#hex2", "#hex3"],
     "colorNames": ["Color Name 1", "Color Name 2", "Color Name 3"],
-    "why": "2-3 sentences explaining why this specifically flatters their body shape and suits their skin tone",
+    "why": "2-3 sentences explaining why this flatters their body shape and suits their skin tone",
     "occasion": "best occasion for this look",
-    "inspiration": "Pinterest/Instagram aesthetic reference (e.g. 'dark academia Pinterest board', 'GRWM minimal aesthetic Instagram')"
+    "inspiration": "Pinterest/Instagram aesthetic reference"
   }
 ]
 
-IMPORTANT: All items in the "items" array must be 100% appropriate for a ${genderLabel}. ${footwearGuidance}
-
-Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics, and silhouettes. Reference real fashion aesthetics from social media.`;
+RULES:
+- Each outfit MUST have 4-6 items with types from: Top, Bottom, Footwear, Outerwear, Accessory, Layering, Innerwear
+- Be VERY specific about cuts, fabrics, fits, and colors (e.g. "Slim-fit dark indigo selvedge denim jeans" not just "jeans")
+- ${footwearGuidance}
+- Make each outfit distinct and genuinely stylish
+- Reference real fashion aesthetics`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -105,7 +111,6 @@ Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error("No content from AI");
 
-    // Parse the JSON response
     let outfits;
     try {
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -114,6 +119,17 @@ Make each outfit distinct and genuinely stylish. Be specific about cuts, fabrics
       console.error("Failed to parse AI response:", content);
       throw new Error("Failed to parse outfit recommendations");
     }
+
+    // Normalize items: support both old string[] format and new {type, description} format
+    outfits = outfits.map((outfit: any) => ({
+      ...outfit,
+      items: (outfit.items || []).map((item: any) => {
+        if (typeof item === "string") {
+          return { type: "Item", description: item };
+        }
+        return { type: item.type || "Item", description: item.description || String(item) };
+      }),
+    }));
 
     return new Response(JSON.stringify({ outfits }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

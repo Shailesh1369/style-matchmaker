@@ -3,11 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Heart, X, Loader2, RotateCcw, BookmarkCheck } from "lucide-react";
+import { Heart, X, Loader2, RotateCcw, BookmarkCheck, Shirt } from "lucide-react";
+
+interface OutfitItem {
+  type: string;
+  description: string;
+}
 
 interface Outfit {
   name: string;
-  items: string[];
+  items: OutfitItem[];
   colors: string[];
   colorNames: string[];
   why: string;
@@ -28,6 +33,17 @@ interface StyleResultsProps {
   onGoToBoard: () => void;
   onBack: () => void;
 }
+
+const TYPE_EMOJI: Record<string, string> = {
+  Top: "👕",
+  Bottom: "👖",
+  Footwear: "👟",
+  Outerwear: "🧥",
+  Accessory: "💍",
+  Layering: "🧣",
+  Innerwear: "👔",
+  Item: "✦",
+};
 
 export default function StyleResults({
   profile,
@@ -82,7 +98,7 @@ export default function StyleResults({
       const { error } = await supabase.from("saved_looks").insert({
         user_id: user.id,
         outfit_name: outfit.name,
-        clothing_items: outfit.items,
+        clothing_items: outfit.items.map((i) => `${i.type}: ${i.description}`),
         color_palette: outfit.colorNames,
         why_it_suits: outfit.why,
         occasions,
@@ -138,6 +154,8 @@ export default function StyleResults({
           <p className="text-muted-foreground mb-1">
             {savedCount > 0
               ? `You saved ${savedCount} outfit${savedCount > 1 ? "s" : ""} to your board`
+              : outfits.length === 0
+              ? "No outfits were generated. Try different options."
               : "You skipped all looks this time"}
           </p>
         </div>
@@ -145,7 +163,7 @@ export default function StyleResults({
           {savedCount > 0 && (
             <Button
               onClick={onGoToBoard}
-              className="h-14 rounded-2xl text-base font-bold bg-blush text-white hover:opacity-90"
+              className="h-14 rounded-2xl text-base font-bold bg-blush text-secondary-foreground hover:opacity-90"
             >
               <BookmarkCheck className="w-5 h-5 mr-2" /> View Saved Looks
             </Button>
@@ -193,7 +211,7 @@ export default function StyleResults({
       {/* Card */}
       <div className="flex-1 px-6 pb-4 flex flex-col">
         <div
-          className={`flex-1 bg-card rounded-3xl shadow-card border border-border p-6 flex flex-col gap-5 transition-all ${
+          className={`flex-1 bg-card rounded-3xl shadow-card border border-border p-6 flex flex-col gap-5 transition-all overflow-y-auto ${
             swipeDir === "left"
               ? "animate-swipe-left"
               : swipeDir === "right"
@@ -216,7 +234,7 @@ export default function StyleResults({
               {current.colors.map((color, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
                   <div
-                    className="w-10 h-10 rounded-xl shadow-md border border-white"
+                    className="w-10 h-10 rounded-xl shadow-md border border-border"
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-[10px] text-muted-foreground">{current.colorNames?.[i] || ""}</span>
@@ -225,21 +243,26 @@ export default function StyleResults({
             </div>
           </div>
 
-          {/* Clothing Items */}
+          {/* Clothing Items — categorized */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">The Look</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Shirt className="w-3.5 h-3.5" /> The Look
+            </p>
             <div className="space-y-3">
               {current.items.map((item, i) => (
                 <div key={i} className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blush flex-shrink-0" />
-                    <p className="text-sm font-medium">{item}</p>
+                  <div className="flex items-start gap-3">
+                    <span className="text-base flex-shrink-0 mt-0.5">{TYPE_EMOJI[item.type] || "✦"}</span>
+                    <div className="flex-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blush">{item.type}</span>
+                      <p className="text-sm font-medium text-foreground">{item.description}</p>
+                    </div>
                   </div>
-                  <div className="flex gap-1.5 pl-5">
+                  <div className="flex gap-1.5 pl-8">
                     {[
-                      { name: "Myntra", url: `https://www.myntra.com/${encodeURIComponent(item)}` },
-                      { name: "Ajio", url: `https://www.ajio.com/search/?text=${encodeURIComponent(item)}` },
-                      { name: "Amazon", url: `https://www.amazon.in/s?k=${encodeURIComponent(item)}` },
+                      { name: "Myntra", url: `https://www.myntra.com/${encodeURIComponent(item.description)}` },
+                      { name: "Ajio", url: `https://www.ajio.com/search/?text=${encodeURIComponent(item.description)}` },
+                      { name: "Amazon", url: `https://www.amazon.in/s?k=${encodeURIComponent(item.description)}` },
                     ].map((store) => (
                       <a
                         key={store.name}
@@ -284,7 +307,7 @@ export default function StyleResults({
             onClick={() => handleSwipe("right")}
             className="w-16 h-16 rounded-full bg-blush shadow-soft flex items-center justify-center hover:opacity-90 transition-all"
           >
-            <Heart className="w-6 h-6 text-white" />
+            <Heart className="w-6 h-6 text-secondary-foreground" />
           </button>
         </div>
 
