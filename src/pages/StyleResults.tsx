@@ -1,11 +1,10 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Heart, X, Loader2, RotateCcw, BookmarkCheck, Shirt } from "lucide-react";
-
-const OutfitMannequin = lazy(() => import("@/components/OutfitMannequin"));
+import BodyTypeReference from "@/components/BodyTypeReference";
 
 interface OutfitItem {
   type: string;
