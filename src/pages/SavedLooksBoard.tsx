@@ -24,9 +24,11 @@ interface SavedLook {
 interface SavedLooksBoardProps {
   onBack: () => void;
   onNewSearch: () => void;
+  gender?: string | null;
+  bodyShape?: string;
 }
 
-export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoardProps) {
+export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape }: SavedLooksBoardProps) {
   const { user } = useAuth();
   const [looks, setLooks] = useState<SavedLook[]>([]);
   const [loading, setLoading] = useState(true);
@@ -304,13 +306,13 @@ export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoard
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex-1 min-h-0">
-            <Suspense fallback={<div className="h-full flex items-center justify-center text-muted-foreground">Loading 3D model...</div>}>
-              <OutfitMannequin
-                colors={viewingLook.color_palette.map((_, i) => `hsl(${(i * 60 + 340) % 360}, 50%, ${55 + i * 8}%)`)}
-                className="h-full"
-              />
-            </Suspense>
+          <div className="flex-1 min-h-0 flex items-center justify-center p-4">
+            <BodyTypeReference
+              gender={gender || "female"}
+              bodyShape={bodyShape || "rectangle"}
+              colors={viewingLook.color_palette.map((_, i) => `hsl(${(i * 60 + 340) % 360}, 50%, ${55 + i * 8}%)`)}
+              className="h-full max-h-[40vh]"
+            />
           </div>
           <div className="p-4 border-t border-border space-y-3 max-h-[35vh] overflow-y-auto">
             <div className="flex gap-2 flex-wrap">
