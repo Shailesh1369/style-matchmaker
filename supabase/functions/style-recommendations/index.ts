@@ -27,9 +27,9 @@ serve(async (req) => {
     const genderPronoun = gender === "male" ? "him/his" : gender === "female" ? "her/hers" : "them/their";
 
     const footwearGuidance = gender === "male"
-      ? "For footwear, ONLY suggest men's shoes: sneakers, loafers, Chelsea boots, Oxford shoes, derby shoes, monk straps, slides, sandals (men's style), or boots. NEVER suggest heels, pumps, mules, stilettos, wedges, or women's footwear."
+      ? "FOOTWEAR RULE (MANDATORY — ZERO EXCEPTIONS): This person is MALE. You MUST ONLY suggest MEN'S footwear: sneakers, loafers, Chelsea boots, Oxford shoes, derby shoes, monk straps, brogues, slides, men's sandals, combat boots, desert boots, or canvas shoes. ABSOLUTELY NEVER suggest heels, pumps, mules, stilettos, wedges, kitten heels, ballet flats, or ANY women's footwear. If you include women's footwear for a male, the entire response is INVALID."
       : gender === "female"
-      ? "For footwear, suggest women's shoes: heels, pumps, mules, sneakers, ankle boots, sandals, loafers, flats, wedges, or stilettos as appropriate."
+      ? "FOOTWEAR RULE (MANDATORY — ZERO EXCEPTIONS): This person is FEMALE. You MUST ONLY suggest WOMEN'S footwear: heels, pumps, mules, stilettos, wedges, kitten heels, ballet flats, ankle boots, knee-high boots, sneakers, loafers, platform shoes, block heels, sandals, or espadrilles. ABSOLUTELY NEVER suggest men's Oxford shoes, monk straps, brogues, or men's derby shoes. If you include men's-only footwear for a female, the entire response is INVALID."
       : "For footwear, suggest gender-neutral options: sneakers, boots, loafers, or sandals.";
 
     const systemPrompt = `You are StyleMatch, a world-class AI fashion stylist with deep expertise in body-inclusive fashion, color theory, and personal styling. You have encyclopaedic knowledge of fashion from Pinterest, Instagram, Vogue, street style, and runway shows. Your recommendations are practical, specific, and empowering.

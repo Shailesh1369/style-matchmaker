@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Trash2, StickyNote, Share2, ChevronDown, ChevronUp,
-  Sparkles, ArrowLeft, Plus
+  Sparkles, ArrowLeft, Plus, Eye, X
 } from "lucide-react";
+
+const OutfitMannequin = lazy(() => import("@/components/OutfitMannequin"));
 
 interface SavedLook {
   id: string;
@@ -32,6 +34,7 @@ export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoard
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const [viewingLook, setViewingLook] = useState<SavedLook | null>(null);
 
   useEffect(() => {
     fetchLooks();
@@ -265,6 +268,12 @@ export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoard
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         {isExpanded ? "Less" : "More"}
                       </button>
+                      <button
+                        onClick={() => setViewingLook(look)}
+                        className="flex items-center gap-1 text-xs font-semibold text-blush hover:opacity-80"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> View Look
+                      </button>
                       <div className="flex-1" />
                       <button
                         onClick={() => shareOutfit(look)}
@@ -283,6 +292,49 @@ export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoard
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* 3D View Final Look Modal */}
+      {viewingLook && (
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col animate-in fade-in">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
+            <button onClick={() => setViewingLook(null)} className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0">
+            <Suspense fallback={<div className="h-full flex items-center justify-center text-muted-foreground">Loading 3D model...</div>}>
+              <OutfitMannequin
+                colors={viewingLook.color_palette.map((_, i) => `hsl(${(i * 60 + 340) % 360}, 50%, ${55 + i * 8}%)`)}
+                className="h-full"
+              />
+            </Suspense>
+          </div>
+          <div className="p-4 border-t border-border space-y-3 max-h-[35vh] overflow-y-auto">
+            <div className="flex gap-2 flex-wrap">
+              {viewingLook.occasions.map((occ) => (
+                <span key={occ} className="text-[10px] font-medium px-2 py-0.5 bg-blush-light text-blush rounded-full">
+                  {occ}
+                </span>
+              ))}
+            </div>
+            <div className="space-y-1.5">
+              {viewingLook.clothing_items.map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blush flex-shrink-0" />
+                  <p className="text-xs text-foreground">{item}</p>
+                </div>
+              ))}
+            </div>
+            {viewingLook.why_it_suits && (
+              <div className="bg-blush-light rounded-xl p-3">
+                <p className="text-[10px] font-semibold text-blush mb-1">Why it works</p>
+                <p className="text-xs text-foreground">{viewingLook.why_it_suits}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

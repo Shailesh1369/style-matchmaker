@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Heart, X, Loader2, RotateCcw, BookmarkCheck, Shirt } from "lucide-react";
+
+const OutfitMannequin = lazy(() => import("@/components/OutfitMannequin"));
 
 interface OutfitItem {
   type: string;
@@ -217,6 +219,13 @@ export default function StyleResults({
               : ""
           }`}
         >
+          {/* 3D Mannequin Preview */}
+          <div className="h-48 rounded-2xl overflow-hidden bg-muted/30 border border-border mb-2">
+            <Suspense fallback={<div className="h-full flex items-center justify-center text-muted-foreground text-xs">Loading 3D...</div>}>
+              <OutfitMannequin colors={current.colors} gender={profile.gender} />
+            </Suspense>
+          </div>
+
           {/* Outfit name & occasion */}
           <div>
             <div className="inline-block px-3 py-1 bg-blush-light rounded-full text-xs font-semibold text-blush mb-3">
