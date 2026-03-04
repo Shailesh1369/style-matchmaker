@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,7 @@ import {
   Trash2, StickyNote, Share2, ChevronDown, ChevronUp,
   Sparkles, ArrowLeft, Plus, Eye, X
 } from "lucide-react";
-
-const OutfitMannequin = lazy(() => import("@/components/OutfitMannequin"));
+import BodyTypeReference from "@/components/BodyTypeReference";
 
 interface SavedLook {
   id: string;
