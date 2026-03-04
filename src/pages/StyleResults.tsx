@@ -35,14 +35,12 @@ interface StyleResultsProps {
 }
 
 const TYPE_EMOJI: Record<string, string> = {
-  Top: "👕",
-  Bottom: "👖",
-  Footwear: "👟",
-  Outerwear: "🧥",
-  Accessory: "💍",
-  Layering: "🧣",
-  Innerwear: "👔",
-  Item: "✦",
+  Top: "👕", Bottom: "👖", Footwear: "👟", Outerwear: "🧥", Accessory: "💍", Layering: "🧣", Innerwear: "👔", Item: "✦",
+  Kurta: "👕", Blazer: "🧥", "T-Shirt": "👕", "Polo Shirt": "👕", Henley: "👕", "Crop Top": "👕", "Button-Down Shirt": "👔",
+  Hoodie: "🧥", Sweatshirt: "🧥", "Tank Top": "👕", Shacket: "🧥", "Denim Jacket": "🧥", "Leather Jacket": "🧥", "Trench Coat": "🧥",
+  Chinos: "👖", "Cargo Pants": "👖", "Palazzo Pants": "👖", "Skinny Jeans": "👖", "Wide-Leg Trousers": "👖", "Pleated Skirt": "👗",
+  Sneakers: "👟", "Chelsea Boots": "👢", Loafers: "👞", Heels: "👠", Mules: "👡", Sandals: "👡",
+  "Crossbody Bag": "👜", Watch: "⌚", "Statement Earrings": "💎", Belt: "🔗", Sunglasses: "🕶️",
 };
 
 export default function StyleResults({
