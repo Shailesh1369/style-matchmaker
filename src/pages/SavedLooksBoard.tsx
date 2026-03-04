@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Trash2, StickyNote, Share2, ChevronDown, ChevronUp,
-  Sparkles, ArrowLeft, Plus
+  Sparkles, ArrowLeft, Plus, Eye, X
 } from "lucide-react";
+
+const OutfitMannequin = lazy(() => import("@/components/OutfitMannequin"));
 
 interface SavedLook {
   id: string;
@@ -32,6 +34,7 @@ export default function SavedLooksBoard({ onBack, onNewSearch }: SavedLooksBoard
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const [viewingLook, setViewingLook] = useState<SavedLook | null>(null);
 
   useEffect(() => {
     fetchLooks();
