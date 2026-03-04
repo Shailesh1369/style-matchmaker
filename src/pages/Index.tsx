@@ -104,6 +104,8 @@ export default function Index() {
         <SavedLooksBoard
           onBack={() => setScreen("results")}
           onNewSearch={() => setScreen("occasion")}
+          gender={profile?.gender}
+          bodyShape={profile?.body_shape}
         />
       );
     }
