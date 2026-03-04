@@ -68,7 +68,9 @@ Return ONLY a valid JSON array (no markdown, no code blocks) with exactly 5 outf
 
 RULES:
 - Each outfit MUST have 4-6 items with types from: Top, Bottom, Footwear, Outerwear, Accessory, Layering, Innerwear
-- Be VERY specific about cuts, fabrics, fits, and colors (e.g. "Slim-fit dark indigo selvedge denim jeans" not just "jeans")
+- For "type" field, be ULTRA SPECIFIC about the garment category — NOT just "Top" or "Bottom". Use the exact garment name like: "Kurta", "Blazer", "T-Shirt", "Polo Shirt", "Henley", "Crop Top", "Button-Down Shirt", "Hoodie", "Sweatshirt", "Tank Top", "Shacket", "Denim Jacket", "Leather Jacket", "Trench Coat", "Chinos", "Cargo Pants", "Palazzo Pants", "Skinny Jeans", "Wide-Leg Trousers", "Pleated Skirt", "Sneakers", "Chelsea Boots", "Loafers", "Heels", "Mules", "Crossbody Bag", "Watch", "Statement Earrings", etc.
+- In the "description" field, mention the EXACT color (e.g. "Olive green", "Dusty rose", "Midnight navy"), fabric (cotton, linen, silk, denim, leather), fit (slim, relaxed, oversized, tailored), and any distinctive details (embroidery, pleats, ribbed texture, mandarin collar, etc.)
+- Example: { "type": "Linen Kurta", "description": "Ivory white linen kurta with mandarin collar, relaxed fit, subtle tone-on-tone embroidery at the cuffs" }
 - ${footwearGuidance}
 - Make each outfit distinct and genuinely stylish
 - Reference real fashion aesthetics`;
