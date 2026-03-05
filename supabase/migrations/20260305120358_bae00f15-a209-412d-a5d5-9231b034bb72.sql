@@ -1,0 +1,1 @@
+ALTER TABLE public.saved_looks ADD COLUMN color_hex text[] DEFAULT '{}'::text[];
