@@ -67,59 +67,88 @@ export default function BodyTypeReference({
   const accentColor = colors[2] || colors[1] || colors[0] || null;
 
   return (
-    <div className={`relative flex flex-col items-center ${className}`}>
-      
-      {/* 
-        LAYER ORDER (bottom to top):
-        1. Silhouette image (z-0) — base layer
-        2. Color overlays (z-10) — ON TOP of image, using mix-blend-multiply
-           so they tint the figure rather than cover it
-        3. Labels (z-20) — always on top
-      */}
-
-      {/* Silhouette image — base layer */}
+    <div
+      className={`relative flex flex-col items-center ${className}`}
+      style={{
+        background: "transparent",
+        minHeight: "280px",
+        overflow: "visible",
+      }}
+    >
+      {/* Silhouette image — base layer, no clipping */}
       <img
         src={image}
         alt={`${label} body type reference`}
-        className="h-full w-auto max-h-full object-contain relative z-0"
+        style={{
+          height: "100%",
+          minHeight: "260px",
+          width: "auto",
+          maxWidth: "100%",
+          objectFit: "contain",
+          position: "relative",
+          zIndex: 0,
+          background: "transparent",
+          display: "block",
+        }}
       />
 
-      {/* Color overlays — ABOVE the image, blending into it */}
+      {/* Color overlays — screen blend for dark backgrounds */}
       {colors.length > 0 && (
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          
-          {/* Top garment zone: roughly shoulders to waist */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 10,
+            pointerEvents: "none",
+          }}
+        >
+          {/* Top garment: shoulders to waist */}
           {topColor && (
             <div
-              className="absolute left-[18%] right-[18%] top-[10%] h-[30%] rounded-2xl"
               style={{
+                position: "absolute",
+                left: "18%",
+                right: "18%",
+                top: "10%",
+                height: "30%",
                 backgroundColor: topColor,
-                opacity: 0.55,
-                mixBlendMode: "multiply",
+                opacity: 0.6,
+                mixBlendMode: "screen",
+                borderRadius: "1rem",
               }}
             />
           )}
 
-          {/* Bottom garment zone: waist to knees */}
+          {/* Bottom garment: waist to knees */}
           {bottomColor && (
             <div
-              className="absolute left-[20%] right-[20%] top-[40%] h-[32%] rounded-2xl"
               style={{
+                position: "absolute",
+                left: "20%",
+                right: "20%",
+                top: "40%",
+                height: "32%",
                 backgroundColor: bottomColor,
-                opacity: 0.5,
-                mixBlendMode: "multiply",
+                opacity: 0.55,
+                mixBlendMode: "screen",
+                borderRadius: "1rem",
               }}
             />
           )}
 
-          {/* Footwear zone: ankles to feet */}
+          {/* Footwear: ankles to feet */}
           {accentColor && (
             <div
-              className="absolute left-[24%] right-[24%] bottom-[8%] h-[14%] rounded-xl"
               style={{
+                position: "absolute",
+                left: "24%",
+                right: "24%",
+                bottom: "8%",
+                height: "14%",
                 backgroundColor: accentColor,
-                opacity: 0.55,
-                mixBlendMode: "multiply",
+                opacity: 0.6,
+                mixBlendMode: "screen",
+                borderRadius: "0.75rem",
               }}
             />
           )}
@@ -127,15 +156,46 @@ export default function BodyTypeReference({
       )}
 
       {/* Body type label */}
-      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20">
-        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-muted-foreground">
+      <div
+        style={{
+          position: "absolute",
+          bottom: "4px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 20,
+        }}
+      >
+        <span
+          style={{
+            fontSize: "9px",
+            fontWeight: "bold",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            padding: "2px 8px",
+            borderRadius: "9999px",
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(4px)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            color: "#aaa",
+          }}
+        >
           {label}
         </span>
       </div>
 
       {/* Color legend */}
       {showColorLegend && colors.length > 0 && (
-        <div className="absolute top-2 right-2 z-20 flex flex-col gap-1">
+        <div
+          style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            zIndex: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+          }}
+        >
           {[
             { color: topColor, label: colorNames[0] || "Top" },
             ...(colors.length > 1
@@ -147,12 +207,29 @@ export default function BodyTypeReference({
           ].map(
             (item, i) =>
               item.color && (
-                <div key={i} className="flex items-center gap-1.5">
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
                   <div
-                    className="w-4 h-4 rounded-md border border-white/50 shadow-sm"
-                    style={{ backgroundColor: item.color }}
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      borderRadius: "4px",
+                      border: "1px solid rgba(255,255,255,0.4)",
+                      backgroundColor: item.color,
+                    }}
                   />
-                  <span className="text-[8px] font-semibold text-foreground bg-card/80 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                  <span
+                    style={{
+                      fontSize: "8px",
+                      fontWeight: 600,
+                      color: "#fff",
+                      background: "rgba(0,0,0,0.5)",
+                      padding: "1px 5px",
+                      borderRadius: "4px",
+                    }}
+                  >
                     {item.label}
                   </span>
                 </div>
