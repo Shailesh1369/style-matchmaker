@@ -99,10 +99,11 @@ export default function StyleResults({
         outfit_name: outfit.name,
         clothing_items: outfit.items.map((i) => `${i.type}: ${i.description}`),
         color_palette: outfit.colorNames,
+        color_hex: outfit.colors,
         why_it_suits: outfit.why,
         occasions,
         vibe_filter: vibeFilter,
-      });
+      } as any);
       if (error) throw error;
       setSavedCount((c) => c + 1);
       toast.success(`💾 "${outfit.name}" saved to your board!`);

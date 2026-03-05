@@ -77,6 +77,7 @@ export type Database = {
       saved_looks: {
         Row: {
           clothing_items: string[]
+          color_hex: string[] | null
           color_palette: string[]
           created_at: string
           id: string
@@ -90,6 +91,7 @@ export type Database = {
         }
         Insert: {
           clothing_items?: string[]
+          color_hex?: string[] | null
           color_palette?: string[]
           created_at?: string
           id?: string
@@ -103,6 +105,7 @@ export type Database = {
         }
         Update: {
           clothing_items?: string[]
+          color_hex?: string[] | null
           color_palette?: string[]
           created_at?: string
           id?: string
