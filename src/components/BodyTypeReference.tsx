@@ -60,27 +60,29 @@ export default function BodyTypeReference({
 
   if (!image) return null;
 
+  const topColor = colors[0] || "transparent";
+  const bottomColor = colors[1] || colors[0] || "transparent";
+  const accentColor = colors[2] || colors[1] || colors[0] || "transparent";
+
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
-      {/* Strong color gradient background */}
-      {colors.length > 0 && (
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background: `linear-gradient(180deg, ${colors[0] || "transparent"}33 0%, ${colors[1] || "transparent"}44 40%, ${colors[2] || "transparent"}33 100%)`,
-          }}
-        />
-      )}
-      {/* Color accent stripes on sides */}
+      {/* Garment color zones overlaid on silhouette */}
       {colors.length > 0 && (
         <>
+          {/* Top garment zone: upper 35% of figure */}
           <div
-            className="absolute left-0 top-[15%] bottom-[15%] w-2 rounded-r-full pointer-events-none"
-            style={{ backgroundColor: colors[0], opacity: 0.7 }}
+            className="absolute left-[20%] right-[20%] top-[12%] h-[28%] rounded-xl pointer-events-none z-[5]"
+            style={{ backgroundColor: topColor, opacity: 0.45 }}
           />
+          {/* Bottom garment zone: mid 30% */}
           <div
-            className="absolute right-0 top-[15%] bottom-[15%] w-2 rounded-l-full pointer-events-none"
-            style={{ backgroundColor: colors[colors.length > 1 ? 1 : 0], opacity: 0.7 }}
+            className="absolute left-[22%] right-[22%] top-[40%] h-[30%] rounded-xl pointer-events-none z-[5]"
+            style={{ backgroundColor: bottomColor, opacity: 0.4 }}
+          />
+          {/* Footwear/accessory zone: lower 15% */}
+          <div
+            className="absolute left-[25%] right-[25%] bottom-[10%] h-[15%] rounded-lg pointer-events-none z-[5]"
+            style={{ backgroundColor: accentColor, opacity: 0.45 }}
           />
         </>
       )}
@@ -90,22 +92,26 @@ export default function BodyTypeReference({
         className="h-full w-auto max-h-full object-contain mix-blend-multiply relative z-10"
       />
       {/* Body type label */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
+      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20">
         <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-muted-foreground">
           {label}
         </span>
       </div>
-      {/* Color legend */}
+      {/* Color legend mapping */}
       {showColorLegend && colors.length > 0 && (
         <div className="absolute top-2 right-2 z-20 flex flex-col gap-1">
-          {colors.map((c, i) => (
+          {[
+            { color: topColor, label: colorNames[0] || "Top" },
+            ...(colors.length > 1 ? [{ color: bottomColor, label: colorNames[1] || "Bottom" }] : []),
+            ...(colors.length > 2 ? [{ color: accentColor, label: colorNames[2] || "Accent" }] : []),
+          ].map((item, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <div
                 className="w-4 h-4 rounded-md border border-white/50 shadow-sm"
-                style={{ backgroundColor: c }}
+                style={{ backgroundColor: item.color }}
               />
               <span className="text-[8px] font-semibold text-foreground bg-card/80 backdrop-blur-sm px-1.5 py-0.5 rounded">
-                {colorNames[i] || ""}
+                {item.label}
               </span>
             </div>
           ))}
