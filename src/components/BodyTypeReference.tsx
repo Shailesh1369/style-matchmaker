@@ -68,92 +68,96 @@ export default function BodyTypeReference({
 
   return (
     <div
-      className={`relative flex flex-col items-center ${className}`}
+      className={`flex flex-col items-center ${className}`}
       style={{
         background: "transparent",
         minHeight: "280px",
-        overflow: "visible",
       }}
     >
-      {/* Silhouette image — base layer, no clipping */}
-      <img
-        src={image}
-        alt={`${label} body type reference`}
+      {/* Inner wrapper: constrains overlays to image width */}
+      <div
         style={{
-          height: "100%",
-          minHeight: "260px",
-          width: "auto",
-          maxWidth: "100%",
-          objectFit: "contain",
           position: "relative",
-          zIndex: 0,
+          display: "inline-block",
+          overflow: "hidden",
           background: "transparent",
-          display: "block",
         }}
-      />
-
-      {/* Color overlays — screen blend for dark backgrounds */}
-      {colors.length > 0 && (
-        <div
+      >
+        <img
+          src={image}
+          alt={`${label} body type reference`}
           style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 10,
-            pointerEvents: "none",
+            height: "100%",
+            minHeight: "260px",
+            width: "auto",
+            maxWidth: "100%",
+            objectFit: "contain",
+            position: "relative",
+            zIndex: 0,
+            background: "transparent",
+            display: "block",
           }}
-        >
-          {/* Top garment: shoulders to waist */}
-          {topColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "18%",
-                right: "18%",
-                top: "10%",
-                height: "30%",
-                backgroundColor: topColor,
-                opacity: 0.6,
-                mixBlendMode: "screen",
-                borderRadius: "1rem",
-              }}
-            />
-          )}
+        />
 
-          {/* Bottom garment: waist to knees */}
-          {bottomColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "20%",
-                right: "20%",
-                top: "40%",
-                height: "32%",
-                backgroundColor: bottomColor,
-                opacity: 0.55,
-                mixBlendMode: "screen",
-                borderRadius: "1rem",
-              }}
-            />
-          )}
+        {/* Color overlays — screen blend for dark backgrounds */}
+        {colors.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+              pointerEvents: "none",
+            }}
+          >
+            {topColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "18%",
+                  right: "18%",
+                  top: "10%",
+                  height: "30%",
+                  backgroundColor: topColor,
+                  opacity: 0.6,
+                  mixBlendMode: "screen",
+                  borderRadius: "1rem",
+                }}
+              />
+            )}
 
-          {/* Footwear: ankles to feet */}
-          {accentColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "24%",
-                right: "24%",
-                bottom: "8%",
-                height: "14%",
-                backgroundColor: accentColor,
-                opacity: 0.6,
-                mixBlendMode: "screen",
-                borderRadius: "0.75rem",
-              }}
-            />
-          )}
-        </div>
-      )}
+            {bottomColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "20%",
+                  right: "20%",
+                  top: "40%",
+                  height: "32%",
+                  backgroundColor: bottomColor,
+                  opacity: 0.55,
+                  mixBlendMode: "screen",
+                  borderRadius: "1rem",
+                }}
+              />
+            )}
+
+            {accentColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "24%",
+                  right: "24%",
+                  bottom: "8%",
+                  height: "14%",
+                  backgroundColor: accentColor,
+                  opacity: 0.6,
+                  mixBlendMode: "screen",
+                  borderRadius: "0.75rem",
+                }}
+              />
+            )}
+          </div>
+        )}
 
       {/* Body type label */}
       <div
