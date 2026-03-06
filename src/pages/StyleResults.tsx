@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Heart, X, Loader2, RotateCcw, BookmarkCheck, Shirt } from "lucide-react";
-import BodyTypeReference from "@/components/BodyTypeReference";
+import OutfitIllustration from "@/components/OutfitIllustration";
 
 interface OutfitItem {
   type: string;
@@ -219,9 +219,17 @@ export default function StyleResults({
               : ""
           }`}
         >
-          {/* Body Type Reference */}
-          <div className="h-48 rounded-2xl overflow-hidden bg-muted/30 border border-border mb-2">
-            <BodyTypeReference gender={profile.gender} bodyShape={profile.body_shape} colors={current.colors} className="h-full" />
+          {/* AI Fashion Illustration */}
+          <div className="h-56 rounded-2xl overflow-hidden bg-muted/30 border border-border mb-2">
+            <OutfitIllustration
+              gender={profile.gender}
+              bodyShape={profile.body_shape}
+              items={current.items}
+              colors={current.colors}
+              colorNames={current.colorNames}
+              occasion={current.occasion}
+              className="h-full"
+            />
           </div>
 
           {/* Outfit name & occasion */}
