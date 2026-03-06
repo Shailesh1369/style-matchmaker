@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      outfit_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          prompt_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          prompt_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          prompt_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
