@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.outfit-analysis]
 verify_jwt = false
+
+[functions.generate-outfit-image]
+verify_jwt = false
