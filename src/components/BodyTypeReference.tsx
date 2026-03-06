@@ -96,6 +96,7 @@ export default function BodyTypeReference({
             zIndex: 0,
             background: "transparent",
             display: "block",
+            mixBlendMode: "multiply",
           }}
         />
 
@@ -113,14 +114,14 @@ export default function BodyTypeReference({
               <div
                 style={{
                   position: "absolute",
-                  left: "18%",
-                  right: "18%",
-                  top: "10%",
-                  height: "30%",
+                  left: "25%",
+                  right: "25%",
+                  top: "18%",
+                  height: "28%",
                   backgroundColor: topColor,
-                  opacity: 0.6,
+                  opacity: 0.55,
                   mixBlendMode: "screen",
-                  borderRadius: "1rem",
+                  borderRadius: "0.4rem",
                 }}
               />
             )}
@@ -129,14 +130,14 @@ export default function BodyTypeReference({
               <div
                 style={{
                   position: "absolute",
-                  left: "20%",
-                  right: "20%",
-                  top: "40%",
-                  height: "32%",
+                  left: "27%",
+                  right: "27%",
+                  top: "46%",
+                  height: "30%",
                   backgroundColor: bottomColor,
-                  opacity: 0.55,
+                  opacity: 0.5,
                   mixBlendMode: "screen",
-                  borderRadius: "1rem",
+                  borderRadius: "0.4rem",
                 }}
               />
             )}
@@ -145,14 +146,14 @@ export default function BodyTypeReference({
               <div
                 style={{
                   position: "absolute",
-                  left: "24%",
-                  right: "24%",
-                  bottom: "8%",
-                  height: "14%",
+                  left: "30%",
+                  right: "30%",
+                  bottom: "5%",
+                  height: "12%",
                   backgroundColor: accentColor,
                   opacity: 0.6,
                   mixBlendMode: "screen",
-                  borderRadius: "0.75rem",
+                  borderRadius: "0.4rem",
                 }}
               />
             )}
