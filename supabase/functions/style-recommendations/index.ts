@@ -16,12 +16,13 @@ serve(async (req) => {
     const occasionLabels = occasions.join(", ");
     const keywordsStr = (styleKeywords || []).join(", ");
 
-    const vibeDesc = {
+    const vibeOptions: Record<string, string> = {
       minimal: "clean, minimal, understated — avoid loud patterns or excess accessories. Think Bottega Veneta quiet luxury, Toteme, COS.",
       bold: "bold, high-impact, statement pieces — embrace color, patterns, and drama. Think Valentino, Versace, Off-White.",
       classic: "timeless, elegant, classic — tailored cuts and quality basics. Think Ralph Lauren, Brunello Cucinelli, The Row.",
       trendy: "on-trend, fashion-forward, zeitgeist — current runway and street style influences. Think what's trending on Pinterest and Instagram right now.",
-    }[vibeFilter] || "balanced and versatile";
+    };
+    const vibeDesc = (vibeFilter && vibeOptions[vibeFilter]) ? vibeOptions[vibeFilter] : "balanced and versatile";
 
     const genderLabel = gender === "male" ? "man" : gender === "female" ? "woman" : "person";
     const genderPronoun = gender === "male" ? "him/his" : gender === "female" ? "her/hers" : "them/their";

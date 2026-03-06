@@ -68,175 +68,180 @@ export default function BodyTypeReference({
 
   return (
     <div
-      className={`relative flex flex-col items-center ${className}`}
+      className={`flex flex-col items-center ${className}`}
       style={{
         background: "transparent",
         minHeight: "280px",
-        overflow: "visible",
       }}
     >
-      {/* Silhouette image — base layer, no clipping */}
-      <img
-        src={image}
-        alt={`${label} body type reference`}
-        style={{
-          height: "100%",
-          minHeight: "260px",
-          width: "auto",
-          maxWidth: "100%",
-          objectFit: "contain",
-          position: "relative",
-          zIndex: 0,
-          background: "transparent",
-          display: "block",
-        }}
-      />
-
-      {/* Color overlays — screen blend for dark backgrounds */}
-      {colors.length > 0 && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 10,
-            pointerEvents: "none",
-          }}
-        >
-          {/* Top garment: shoulders to waist */}
-          {topColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "18%",
-                right: "18%",
-                top: "10%",
-                height: "30%",
-                backgroundColor: topColor,
-                opacity: 0.6,
-                mixBlendMode: "screen",
-                borderRadius: "1rem",
-              }}
-            />
-          )}
-
-          {/* Bottom garment: waist to knees */}
-          {bottomColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "20%",
-                right: "20%",
-                top: "40%",
-                height: "32%",
-                backgroundColor: bottomColor,
-                opacity: 0.55,
-                mixBlendMode: "screen",
-                borderRadius: "1rem",
-              }}
-            />
-          )}
-
-          {/* Footwear: ankles to feet */}
-          {accentColor && (
-            <div
-              style={{
-                position: "absolute",
-                left: "24%",
-                right: "24%",
-                bottom: "8%",
-                height: "14%",
-                backgroundColor: accentColor,
-                opacity: 0.6,
-                mixBlendMode: "screen",
-                borderRadius: "0.75rem",
-              }}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Body type label */}
+      {/* Inner wrapper: constrains overlays to image width */}
       <div
         style={{
-          position: "absolute",
-          bottom: "4px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 20,
+          position: "relative",
+          display: "inline-block",
+          overflow: "hidden",
+          background: "transparent",
         }}
       >
-        <span
+        <img
+          src={image}
+          alt={`${label} body type reference`}
           style={{
-            fontSize: "9px",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            padding: "2px 8px",
-            borderRadius: "9999px",
-            background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(4px)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            color: "#aaa",
+            height: "100%",
+            minHeight: "260px",
+            width: "auto",
+            maxWidth: "100%",
+            objectFit: "contain",
+            position: "relative",
+            zIndex: 0,
+            background: "transparent",
+            display: "block",
           }}
-        >
-          {label}
-        </span>
-      </div>
+        />
 
-      {/* Color legend */}
-      {showColorLegend && colors.length > 0 && (
+        {/* Color overlays — screen blend for dark backgrounds */}
+        {colors.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+              pointerEvents: "none",
+            }}
+          >
+            {topColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "18%",
+                  right: "18%",
+                  top: "10%",
+                  height: "30%",
+                  backgroundColor: topColor,
+                  opacity: 0.6,
+                  mixBlendMode: "screen",
+                  borderRadius: "1rem",
+                }}
+              />
+            )}
+
+            {bottomColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "20%",
+                  right: "20%",
+                  top: "40%",
+                  height: "32%",
+                  backgroundColor: bottomColor,
+                  opacity: 0.55,
+                  mixBlendMode: "screen",
+                  borderRadius: "1rem",
+                }}
+              />
+            )}
+
+            {accentColor && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "24%",
+                  right: "24%",
+                  bottom: "8%",
+                  height: "14%",
+                  backgroundColor: accentColor,
+                  opacity: 0.6,
+                  mixBlendMode: "screen",
+                  borderRadius: "0.75rem",
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Body type label */}
         <div
           style={{
             position: "absolute",
-            top: "8px",
-            right: "8px",
+            bottom: "4px",
+            left: "50%",
+            transform: "translateX(-50%)",
             zIndex: 20,
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
           }}
         >
-          {[
-            { color: topColor, label: colorNames[0] || "Top" },
-            ...(colors.length > 1
-              ? [{ color: bottomColor, label: colorNames[1] || "Bottom" }]
-              : []),
-            ...(colors.length > 2
-              ? [{ color: accentColor, label: colorNames[2] || "Accent" }]
-              : []),
-          ].map(
-            (item, i) =>
-              item.color && (
-                <div
-                  key={i}
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <div
-                    style={{
-                      width: "14px",
-                      height: "14px",
-                      borderRadius: "4px",
-                      border: "1px solid rgba(255,255,255,0.4)",
-                      backgroundColor: item.color,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "8px",
-                      fontWeight: 600,
-                      color: "#fff",
-                      background: "rgba(0,0,0,0.5)",
-                      padding: "1px 5px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-              )
-          )}
+          <span
+            style={{
+              fontSize: "9px",
+              fontWeight: "bold",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              padding: "2px 8px",
+              borderRadius: "9999px",
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "#aaa",
+            }}
+          >
+            {label}
+          </span>
         </div>
-      )}
+
+        {/* Color legend */}
+        {showColorLegend && colors.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "8px",
+              right: "8px",
+              zIndex: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+            }}
+          >
+            {[
+              { color: topColor, label: colorNames[0] || "Top" },
+              ...(colors.length > 1
+                ? [{ color: bottomColor, label: colorNames[1] || "Bottom" }]
+                : []),
+              ...(colors.length > 2
+                ? [{ color: accentColor, label: colorNames[2] || "Accent" }]
+                : []),
+            ].map(
+              (item, i) =>
+                item.color && (
+                  <div
+                    key={i}
+                    style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <div
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        borderRadius: "4px",
+                        border: "1px solid rgba(255,255,255,0.4)",
+                        backgroundColor: item.color,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: "8px",
+                        fontWeight: 600,
+                        color: "#fff",
+                        background: "rgba(0,0,0,0.5)",
+                        padding: "1px 5px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                )
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
