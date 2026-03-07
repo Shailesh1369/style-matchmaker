@@ -5,8 +5,8 @@ interface FashionImageParams {
   gender: string;
   bodyShape: string;
   occasion: string;
-  outfitItems: string[];   // e.g. ["blazer", "chinos", "boots"]
-  colors: string[];        // e.g. ["Charcoal Grey", "Navy Blue", "Black"]
+  outfitItems: string[];
+  colors: string[];
 }
 
 export async function generateFashionImage(
@@ -14,15 +14,32 @@ export async function generateFashionImage(
 ): Promise<string | null> {
   const { gender, bodyShape, occasion, outfitItems, colors } = params;
 
-  // Build a rich fashion prompt from outfit data
+  // Build strong gender-specific terms so the model never gets confused
+  const isMale = gender?.toLowerCase() === "male";
+
+  const genderTerms = isMale
+    ? {
+        subject: "man, male model, masculine figure",
+        body: "male body, men's fashion",
+        pronoun: "men's clothing, menswear",
+      }
+    : {
+        subject: "woman, female model, feminine figure",
+        body: "female body, women's fashion",
+        pronoun: "women's clothing, womenswear",
+      };
+
+  const negativeGender = isMale
+    ? "woman, female, girl, feminine, dress, skirt, heels"
+    : "man, male, boy, masculine, suit and tie";
+
   const outfitDescription = outfitItems
     .map((item, i) => `${item} in ${colors[i] || colors[0]}`)
     .join(", ");
 
-  const prompt = `Full body fashion editorial illustration of a ${gender} model with ${bodyShape} body type, wearing ${outfitDescription}, styled for ${occasion}, clean minimal studio background, high fashion magazine editorial style, sharp clothing details, elegant confident pose, professional fashion photography lighting`;
+  const prompt = `${genderTerms.subject}, ${genderTerms.body}, ${bodyShape} body type, ${genderTerms.pronoun}, wearing ${outfitDescription}, styled for ${occasion}, full body shot, clean minimal studio background, high fashion magazine editorial style, sharp clothing details, elegant confident pose, professional fashion photography lighting`;
 
-  const negativePrompt =
-    "deformed, blurry, bad anatomy, extra limbs, watermark, text, logo, ugly, duplicate, mutated, cartoon, anime";
+  const negativePrompt = `${negativeGender}, deformed, blurry, bad anatomy, extra limbs, watermark, text, logo, ugly, duplicate, mutated, cartoon, anime, wrong gender`;
 
   try {
     const response = await fetch(
@@ -39,10 +56,10 @@ export async function generateFashionImage(
             { text: prompt, weight: 1 },
             { text: negativePrompt, weight: -1 },
           ],
-          cfg_scale: 7,
+          cfg_scale: 10,   // Higher = model follows prompt more strictly
           height: 1024,
-          width: 768,       // Portrait ratio — better for full body fashion
-          steps: 30,
+          width: 768,
+          steps: 35,       // More steps = more accurate to prompt
           samples: 1,
           style_preset: "fashion",
         }),
@@ -60,7 +77,6 @@ export async function generateFashionImage(
 
     if (!base64Image) return null;
 
-    // Return as a usable image src
     return `data:image/png;base64,${base64Image}`;
   } catch (err) {
     console.error("Fashion image generation failed:", err);
