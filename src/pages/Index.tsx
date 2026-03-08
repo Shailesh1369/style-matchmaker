@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+mport { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AuthPage from "./AuthPage";
@@ -20,48 +20,71 @@ interface Profile {
   gender: string | null;
 }
 
+// sessionStorage keys
+const SK_SCREEN = "silhouette_screen";
+const SK_OCCASIONS = "silhouette_occasions";
+const SK_VIBE = "silhouette_vibe";
+
 export default function Index() {
   const { user, loading } = useAuth();
-  const [screen, setScreen] = useState<AppScreen>("auth");
+
+  // Restore screen from sessionStorage so tab switches don't reset navigation
+  const restoredScreen = sessionStorage.getItem(SK_SCREEN) as AppScreen | null;
+  const restoredOccasions = sessionStorage.getItem(SK_OCCASIONS);
+  const restoredVibe = sessionStorage.getItem(SK_VIBE);
+
+  const [screen, setScreen] = useState<AppScreen>(restoredScreen || "auth");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [occasions, setOccasions] = useState<string[]>([]);
-  const [vibeFilter, setVibeFilter] = useState("minimal");
+  const [occasions, setOccasions] = useState<string[]>(restoredOccasions ? JSON.parse(restoredOccasions) : []);
+  const [vibeFilter, setVibeFilter] = useState(restoredVibe || "minimal");
   const [checkingProfile, setCheckingProfile] = useState(false);
+
+  // Persist screen whenever it changes
+  const navigateTo = (s: AppScreen) => {
+    sessionStorage.setItem(SK_SCREEN, s);
+    setScreen(s);
+  };
+
+  // Persist occasions + vibe
+  const handleOccasionNext = (selectedOccasions: string[], selectedVibe: string) => {
+    sessionStorage.setItem(SK_OCCASIONS, JSON.stringify(selectedOccasions));
+    sessionStorage.setItem(SK_VIBE, selectedVibe);
+    setOccasions(selectedOccasions);
+    setVibeFilter(selectedVibe);
+    navigateTo("results");
+  };
 
   useEffect(() => {
     if (!user) {
-      setScreen("auth");
+      navigateTo("auth");
       return;
     }
-    checkUserProfile();
+    // If we restored a valid screen from session, just reload profile silently
+    // without changing the screen — user stays where they were
+    checkUserProfile(!!restoredScreen && restoredScreen !== "auth");
   }, [user]);
 
-  const checkUserProfile = async () => {
+  const checkUserProfile = async (silent = false) => {
     if (!user) return;
-    setCheckingProfile(true);
+    if (!silent) setCheckingProfile(true);
     const { data } = await supabase
       .from("profiles")
       .select("body_shape, height_cm, skin_tone, style_keywords, gender")
       .eq("user_id", user.id)
       .maybeSingle();
-    setCheckingProfile(false);
+    if (!silent) setCheckingProfile(false);
 
     if (data?.body_shape) {
       setProfile(data as Profile);
-      setScreen("occasion");
+      // Only navigate if we don't have a restored screen
+      if (!silent) navigateTo("occasion");
     } else {
-      setScreen("onboarding");
+      if (!silent) navigateTo("onboarding");
     }
   };
 
   const handleOnboardingComplete = async () => {
     await checkUserProfile();
-  };
-
-  const handleOccasionNext = (selectedOccasions: string[], selectedVibe: string) => {
-    setOccasions(selectedOccasions);
-    setVibeFilter(selectedVibe);
-    setScreen("results");
   };
 
   if (loading || checkingProfile) {
@@ -78,15 +101,14 @@ export default function Index() {
     return <OnboardingPage onComplete={handleOnboardingComplete} />;
   }
 
-  // Screens that need bottom nav
   const showBottomNav = ["occasion", "results", "board", "profile", "camera"].includes(screen);
 
   const renderContent = () => {
     if (screen === "profile") {
-      return <ProfilePage onBack={() => setScreen("occasion")} />;
+      return <ProfilePage onBack={() => navigateTo("occasion")} />;
     }
     if (screen === "camera" && profile) {
-      return <CameraAnalysis profile={profile} onBack={() => setScreen("occasion")} />;
+      return <CameraAnalysis profile={profile} onBack={() => navigateTo("occasion")} />;
     }
     if (screen === "results" && profile) {
       return (
@@ -94,16 +116,16 @@ export default function Index() {
           profile={profile}
           occasions={occasions}
           vibeFilter={vibeFilter}
-          onGoToBoard={() => setScreen("board")}
-          onBack={() => setScreen("occasion")}
+          onGoToBoard={() => navigateTo("board")}
+          onBack={() => navigateTo("occasion")}
         />
       );
     }
     if (screen === "board") {
       return (
         <SavedLooksBoard
-          onBack={() => setScreen("results")}
-          onNewSearch={() => setScreen("occasion")}
+          onBack={() => navigateTo("results")}
+          onNewSearch={() => navigateTo("occasion")}
           gender={profile?.gender}
           bodyShape={profile?.body_shape}
         />
@@ -122,7 +144,7 @@ export default function Index() {
         <nav className="fixed bottom-0 inset-x-0 z-50 bg-card/95 backdrop-blur-md border-t border-border">
           <div className="flex justify-around items-center h-16 max-w-md mx-auto">
             <button
-              onClick={() => setScreen("occasion")}
+              onClick={() => navigateTo("occasion")}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
                 screen === "occasion" ? "text-blush" : "text-muted-foreground"
               }`}
@@ -131,7 +153,7 @@ export default function Index() {
               <span className="text-[10px] font-semibold">Explore</span>
             </button>
             <button
-              onClick={() => setScreen("camera")}
+              onClick={() => navigateTo("camera")}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
                 screen === "camera" ? "text-blush" : "text-muted-foreground"
               }`}
@@ -140,7 +162,7 @@ export default function Index() {
               <span className="text-[10px] font-semibold">Try-On</span>
             </button>
             <button
-              onClick={() => setScreen("board")}
+              onClick={() => navigateTo("board")}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
                 screen === "board" ? "text-blush" : "text-muted-foreground"
               }`}
@@ -149,7 +171,7 @@ export default function Index() {
               <span className="text-[10px] font-semibold">Saved</span>
             </button>
             <button
-              onClick={() => setScreen("profile")}
+              onClick={() => navigateTo("profile")}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
                 screen === "profile" ? "text-blush" : "text-muted-foreground"
               }`}
