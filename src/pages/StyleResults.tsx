@@ -44,6 +44,12 @@ const TYPE_EMOJI: Record<string, string> = {
   "Crossbody Bag": "👜", Watch: "⌚", "Statement Earrings": "💎", Belt: "🔗", Sunglasses: "🕶️",
 };
 
+// sessionStorage keys
+const SESSION_KEY_OUTFITS = "silhouette_outfits";
+const SESSION_KEY_INDEX = "silhouette_index";
+const SESSION_KEY_SAVED = "silhouette_saved_count";
+const SESSION_KEY_DONE = "silhouette_done";
+
 export default function StyleResults({
   profile,
   occasions,
@@ -52,15 +58,47 @@ export default function StyleResults({
   onBack,
 }: StyleResultsProps) {
   const { user } = useAuth();
-  const [outfits, setOutfits] = useState<Outfit[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+
+  // Restore state from sessionStorage if available (user returned from shopping tab)
+  const savedOutfits = sessionStorage.getItem(SESSION_KEY_OUTFITS);
+  const savedIndex = sessionStorage.getItem(SESSION_KEY_INDEX);
+  const savedCount_ = sessionStorage.getItem(SESSION_KEY_SAVED);
+  const savedDone = sessionStorage.getItem(SESSION_KEY_DONE);
+
+  const [outfits, setOutfits] = useState<Outfit[]>(savedOutfits ? JSON.parse(savedOutfits) : []);
+  const [currentIndex, setCurrentIndex] = useState(savedIndex ? parseInt(savedIndex) : 0);
+  const [loading, setLoading] = useState(!savedOutfits); // skip loading if we have cached outfits
   const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
-  const [savedCount, setSavedCount] = useState(0);
-  const [done, setDone] = useState(false);
+  const [savedCount, setSavedCount] = useState(savedCount_ ? parseInt(savedCount_) : 0);
+  const [done, setDone] = useState(savedDone === "true");
+
+  // Persist outfits to sessionStorage whenever they change
+  useEffect(() => {
+    if (outfits.length > 0) {
+      sessionStorage.setItem(SESSION_KEY_OUTFITS, JSON.stringify(outfits));
+    }
+  }, [outfits]);
+
+  // Persist index
+  useEffect(() => {
+    sessionStorage.setItem(SESSION_KEY_INDEX, String(currentIndex));
+  }, [currentIndex]);
+
+  // Persist saved count
+  useEffect(() => {
+    sessionStorage.setItem(SESSION_KEY_SAVED, String(savedCount));
+  }, [savedCount]);
+
+  // Persist done state
+  useEffect(() => {
+    sessionStorage.setItem(SESSION_KEY_DONE, String(done));
+  }, [done]);
 
   useEffect(() => {
-    fetchRecommendations();
+    // Only fetch if we don't have cached outfits
+    if (!savedOutfits) {
+      fetchRecommendations();
+    }
   }, []);
 
   const fetchRecommendations = async () => {
@@ -68,6 +106,11 @@ export default function StyleResults({
     setCurrentIndex(0);
     setDone(false);
     setSavedCount(0);
+    // Clear session cache when fetching fresh
+    sessionStorage.removeItem(SESSION_KEY_OUTFITS);
+    sessionStorage.removeItem(SESSION_KEY_INDEX);
+    sessionStorage.removeItem(SESSION_KEY_SAVED);
+    sessionStorage.removeItem(SESSION_KEY_DONE);
     try {
       const { data, error } = await supabase.functions.invoke("style-recommendations", {
         body: {
@@ -256,7 +299,7 @@ export default function StyleResults({
             </div>
           </div>
 
-          {/* Clothing Items — categorized */}
+          {/* Clothing Items */}
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <Shirt className="w-3.5 h-3.5" /> The Look
@@ -280,8 +323,8 @@ export default function StyleResults({
                       <a
                         key={store.name}
                         href={store.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        target="_blank"           // opens in new tab
+                        rel="noopener noreferrer" // security best practice
                         className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground hover:text-blush hover:border-blush transition-all"
                       >
                         {store.name}
