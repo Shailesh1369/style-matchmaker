@@ -21,65 +21,77 @@ interface Profile {
 }
 
 // sessionStorage keys
-const SK_SCREEN = "silhouette_screen";
+const SK_SCREEN    = "silhouette_screen";
 const SK_OCCASIONS = "silhouette_occasions";
-const SK_VIBE = "silhouette_vibe";
+const SK_VIBE      = "silhouette_vibe";
+const SK_PROFILE   = "silhouette_profile";   // ← NEW
+
+function readSession<T>(key: string, fallback: T): T {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export default function Index() {
   const { user, loading } = useAuth();
 
-  // Restore screen from sessionStorage so tab switches don't reset navigation
-  const restoredScreen = sessionStorage.getItem(SK_SCREEN) as AppScreen | null;
-  const restoredOccasions = sessionStorage.getItem(SK_OCCASIONS);
-  const restoredVibe = sessionStorage.getItem(SK_VIBE);
-
-  const [screen, setScreen] = useState<AppScreen>(restoredScreen || "auth");
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [occasions, setOccasions] = useState<string[]>(restoredOccasions ? JSON.parse(restoredOccasions) : []);
-  const [vibeFilter, setVibeFilter] = useState(restoredVibe || "minimal");
+  // ── Restore ALL state from sessionStorage on mount ──────────────────────
+  const [screen,      setScreen]      = useState<AppScreen>(readSession(SK_SCREEN, "auth"));
+  const [profile,     setProfile]     = useState<Profile | null>(readSession<Profile | null>(SK_PROFILE, null));
+  const [occasions,   setOccasions]   = useState<string[]>(readSession(SK_OCCASIONS, []));
+  const [vibeFilter,  setVibeFilter]  = useState<string>(readSession(SK_VIBE, "minimal"));
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  // Persist screen whenever it changes
+  // ── Helpers that persist while navigating ───────────────────────────────
   const navigateTo = (s: AppScreen) => {
-    sessionStorage.setItem(SK_SCREEN, s);
+    sessionStorage.setItem(SK_SCREEN, JSON.stringify(s));
     setScreen(s);
   };
 
-  // Persist occasions + vibe
-  const handleOccasionNext = (selectedOccasions: string[], selectedVibe: string) => {
-    sessionStorage.setItem(SK_OCCASIONS, JSON.stringify(selectedOccasions));
-    sessionStorage.setItem(SK_VIBE, selectedVibe);
-    setOccasions(selectedOccasions);
-    setVibeFilter(selectedVibe);
-    navigateTo("results");
+  const persistProfile = (p: Profile) => {
+    sessionStorage.setItem(SK_PROFILE, JSON.stringify(p));
+    setProfile(p);
   };
 
+  // ── Auth effect ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!user) {
       navigateTo("auth");
       return;
     }
-    // If we restored a valid screen from session, just reload profile silently
-    // without changing the screen — user stays where they were
-    checkUserProfile(!!restoredScreen && restoredScreen !== "auth");
+
+    // If we already have a profile cached AND a valid screen, skip the DB call
+    const cachedProfile = readSession<Profile | null>(SK_PROFILE, null);
+    const cachedScreen  = readSession<AppScreen>(SK_SCREEN, "auth");
+
+    if (cachedProfile?.body_shape && cachedScreen !== "auth") {
+      // Just make sure React state is in sync — no navigation change
+      setProfile(cachedProfile);
+      return;
+    }
+
+    // Fresh load — check DB
+    checkUserProfile();
   }, [user]);
 
-  const checkUserProfile = async (silent = false) => {
+  const checkUserProfile = async () => {
     if (!user) return;
-    if (!silent) setCheckingProfile(true);
+    setCheckingProfile(true);
     const { data } = await supabase
       .from("profiles")
       .select("body_shape, height_cm, skin_tone, style_keywords, gender")
       .eq("user_id", user.id)
       .maybeSingle();
-    if (!silent) setCheckingProfile(false);
+    setCheckingProfile(false);
 
     if (data?.body_shape) {
-      setProfile(data as Profile);
-      // Only navigate if we don't have a restored screen
-      if (!silent) navigateTo("occasion");
+      persistProfile(data as Profile);
+      navigateTo("occasion");
     } else {
-      if (!silent) navigateTo("onboarding");
+      navigateTo("onboarding");
     }
   };
 
@@ -87,6 +99,15 @@ export default function Index() {
     await checkUserProfile();
   };
 
+  const handleOccasionNext = (selectedOccasions: string[], selectedVibe: string) => {
+    sessionStorage.setItem(SK_OCCASIONS, JSON.stringify(selectedOccasions));
+    sessionStorage.setItem(SK_VIBE, JSON.stringify(selectedVibe));
+    setOccasions(selectedOccasions);
+    setVibeFilter(selectedVibe);
+    navigateTo("results");
+  };
+
+  // ── Render ───────────────────────────────────────────────────────────────
   if (loading || checkingProfile) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
