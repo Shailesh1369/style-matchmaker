@@ -1,3 +1,6 @@
+Savedlooksboard · TSX
+Copy
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +10,7 @@ import {
   Trash2, StickyNote, Share2, ChevronDown, ChevronUp,
   Sparkles, ArrowLeft, Plus, Eye, X, Shirt
 } from "lucide-react";
-import BodyTypeReference from "@/components/BodyTypeReference";
+import FashionIllustration from "@/components/FashionIllustration";
 
 interface SavedLook {
   id: string;
@@ -99,8 +102,15 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
 
   const getHexColors = (look: SavedLook): string[] => {
     if (look.color_hex && look.color_hex.length > 0) return look.color_hex;
-    // Fallback: generate placeholder colors
     return look.color_palette.map((_, i) => `hsl(${(i * 60 + 340) % 360}, 50%, ${55 + i * 8}%)`);
+  };
+
+  // Parse clothing items into the format FashionIllustration expects
+  const parseClothingItems = (items: string[]) => {
+    return items.map((item) => {
+      const [type, ...descParts] = item.split(": ");
+      return { type: type || "Item", description: descParts.join(": ") || item };
+    });
   };
 
   if (loading) {
@@ -157,7 +167,7 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                   key={look.id}
                   className="break-inside-avoid bg-card rounded-3xl border border-border shadow-card overflow-hidden"
                 >
-                  {/* Color bar with actual colors */}
+                  {/* Color bar */}
                   <div className="h-2 flex">
                     {hexColors.slice(0, 3).map((color, i) => (
                       <div key={i} className="flex-1" style={{ backgroundColor: color }} />
@@ -165,7 +175,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                   </div>
 
                   <div className="p-5">
-                    {/* Name & occasions */}
                     <div className="mb-3">
                       <h3 className="font-black text-lg leading-tight mb-2">{look.outfit_name}</h3>
                       <div className="flex flex-wrap gap-1.5">
@@ -182,14 +191,10 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                       </div>
                     </div>
 
-                    {/* Color swatches with actual hex */}
                     <div className="flex gap-2 mb-4">
                       {hexColors.map((hex, i) => (
                         <div key={i} className="flex flex-col items-center gap-1">
-                          <div
-                            className="w-7 h-7 rounded-lg border border-white shadow-sm"
-                            style={{ backgroundColor: hex }}
-                          />
+                          <div className="w-7 h-7 rounded-lg border border-white shadow-sm" style={{ backgroundColor: hex }} />
                           <span className="text-[9px] text-muted-foreground text-center leading-tight max-w-[40px]">
                             {look.color_palette[i] || ""}
                           </span>
@@ -197,7 +202,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                       ))}
                     </div>
 
-                    {/* Items preview */}
                     <div className="space-y-1.5 mb-4">
                       {(isExpanded ? look.clothing_items : look.clothing_items.slice(0, 2)).map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
@@ -212,7 +216,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                       )}
                     </div>
 
-                    {/* Expanded section */}
                     {isExpanded && (
                       <div className="space-y-3">
                         {look.why_it_suits && (
@@ -252,7 +255,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                       </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
                       <button onClick={() => setExpandedId(isExpanded ? null : look.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -277,34 +279,42 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
         </div>
       )}
 
-      {/* Enhanced View Look Modal */}
+      {/* View Look Modal — now uses FashionIllustration */}
       {viewingLook && (() => {
         const hexColors = getHexColors(viewingLook);
+        const parsedItems = parseClothingItems(viewingLook.clothing_items);
+        const occasionLabel = viewingLook.occasions?.[0] || "casual";
+
         return (
           <div className="fixed inset-0 z-50 bg-background/95 flex flex-col animate-in fade-in">
-            <div className="flex items-center justify-between p-4 border-b border-border">
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
               <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
-              <button onClick={() => setViewingLook(null)} className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center">
+              <button
+                onClick={() => setViewingLook(null)}
+                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto">
-              {/* Body reference with prominent colors */}
-              <div className="flex items-center justify-center p-4">
-                <div className="relative w-full max-w-xs aspect-[3/4] rounded-2xl overflow-hidden bg-muted/20 border border-border">
-                  <BodyTypeReference
+
+              {/* AI Fashion Illustration — replaces broken silhouette */}
+              <div className="px-6 pt-4 pb-2">
+                <div className="w-full rounded-2xl overflow-hidden border border-border bg-muted/20" style={{ minHeight: "320px" }}>
+                  <FashionIllustration
                     gender={gender || "female"}
                     bodyShape={bodyShape || "rectangle"}
+                    outfitItems={parsedItems.map(i => i.description)}
                     colors={hexColors}
                     colorNames={viewingLook.color_palette}
-                    showColorLegend
-                    className="h-full w-full"
+                    occasion={occasionLabel}
                   />
                 </div>
               </div>
 
-              {/* Color palette bar */}
+              {/* Color palette */}
               <div className="px-6 mb-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Color Palette</p>
                 <div className="flex gap-3">
@@ -323,22 +333,18 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                   <Shirt className="w-3.5 h-3.5" /> Complete Look Breakdown
                 </p>
                 <div className="space-y-2.5">
-                  {viewingLook.clothing_items.map((item, i) => {
-                    const [type, ...descParts] = item.split(": ");
-                    const desc = descParts.join(": ") || item;
-                    return (
-                      <div key={i} className="flex items-start gap-3 bg-card rounded-xl p-3 border border-border">
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0 mt-1 border border-white shadow-sm"
-                          style={{ backgroundColor: hexColors[i % hexColors.length] }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blush">{type}</span>
-                          <p className="text-sm font-medium text-foreground">{desc}</p>
-                        </div>
+                  {parsedItems.map((item, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-card rounded-xl p-3 border border-border">
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0 mt-1 border border-white shadow-sm"
+                        style={{ backgroundColor: hexColors[i % hexColors.length] }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blush">{item.type}</span>
+                        <p className="text-sm font-medium text-foreground">{item.description}</p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
 
