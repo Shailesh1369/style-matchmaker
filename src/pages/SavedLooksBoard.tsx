@@ -276,104 +276,97 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
         </div>
       )}
 
-      {/* View Look Modal — now uses FashionIllustration */}
-      {viewingLook && (() => {
-        const hexColors = getHexColors(viewingLook);
-        const parsedItems = parseClothingItems(viewingLook.clothing_items);
-        const occasionLabel = viewingLook.occasions?.[0] || "casual";
-
-        return (
-          <div className="fixed inset-0 z-50 bg-background/95 flex flex-col animate-in fade-in">
-            {/* Modal header */}
-            <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
-              <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
-              <button
-                onClick={() => setViewingLook(null)}
-                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 min-h-0 overflow-y-auto">
-
-              {/* AI Fashion Illustration — replaces broken silhouette */}
-              <div className="px-6 pt-4 pb-2">
-                <div className="w-full rounded-2xl overflow-hidden border border-border bg-muted/20" style={{ minHeight: "320px" }}>
-                  <FashionIllustration
-                    gender={gender || "female"}
-                    bodyShape={bodyShape || "rectangle"}
-                    outfitItems={parsedItems.map(i => i.description)}
-                    colors={hexColors}
-                    colorNames={viewingLook.color_palette}
-                    occasion={occasionLabel}
-                  />
-                </div>
-              </div>
-
-              {/* Color palette */}
-              <div className="px-6 mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Color Palette</p>
-                <div className="flex gap-3">
-                  {hexColors.map((hex, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1.5">
-                      <div className="w-12 h-12 rounded-xl shadow-md border-2 border-white" style={{ backgroundColor: hex }} />
-                      <span className="text-[10px] font-medium text-muted-foreground">{viewingLook.color_palette[i] || ""}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Clothing items breakdown */}
-              <div className="px-6 mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-                  <Shirt className="w-3.5 h-3.5" /> Complete Look Breakdown
-                </p>
-                <div className="space-y-2.5">
-                  {parsedItems.map((item, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-card rounded-xl p-3 border border-border">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0 mt-1 border border-white shadow-sm"
-                        style={{ backgroundColor: hexColors[i % hexColors.length] }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blush">{item.type}</span>
-                        <p className="text-sm font-medium text-foreground">{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Occasions */}
-              <div className="px-6 mb-4">
-                <div className="flex gap-2 flex-wrap">
-                  {viewingLook.occasions.map((occ) => (
-                    <span key={occ} className="text-[10px] font-medium px-2.5 py-1 bg-blush-light text-blush rounded-full">
-                      {OCCASION_LABELS[occ] || occ}
-                    </span>
-                  ))}
-                  {viewingLook.vibe_filter && (
-                    <span className="text-[10px] font-medium px-2.5 py-1 bg-sand rounded-full text-muted-foreground capitalize">
-                      {viewingLook.vibe_filter}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Why it works */}
-              {viewingLook.why_it_suits && (
-                <div className="px-6 pb-6">
-                  <div className="bg-blush-light rounded-2xl p-4">
-                    <p className="text-[10px] font-semibold text-blush mb-1">Why it works for you</p>
-                    <p className="text-sm text-foreground leading-relaxed">{viewingLook.why_it_suits}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+{/* View Look Modal — fixed render pattern */}
+      {viewingLook !== null && (
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col animate-in fade-in">
+          {/* Modal header */}
+          <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
+            <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
+            <button
+              onClick={() => setViewingLook(null)}
+              className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        );
-      })()}
+
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {/* AI Fashion Illustration */}
+            <div className="px-6 pt-4 pb-2">
+              <div className="w-full rounded-2xl overflow-hidden border border-border bg-muted/20" style={{ minHeight: "320px" }}>
+                <FashionIllustration
+                  gender={gender || "female"}
+                  bodyShape={bodyShape || "rectangle"}
+                  outfitItems={parseClothingItems(viewingLook.clothing_items).map(i => i.description)}
+                  colors={getHexColors(viewingLook)}
+                  colorNames={viewingLook.color_palette}
+                  occasion={viewingLook.occasions?.[0] || "casual"}
+                />
+              </div>
+            </div>
+
+            {/* Color palette */}
+            <div className="px-6 mb-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Color Palette</p>
+              <div className="flex gap-3">
+                {getHexColors(viewingLook).map((hex, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1.5">
+                    <div className="w-12 h-12 rounded-xl shadow-md border-2 border-white" style={{ backgroundColor: hex }} />
+                    <span className="text-[10px] font-medium text-muted-foreground">{viewingLook.color_palette[i] || ""}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Clothing items */}
+            <div className="px-6 mb-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Shirt className="w-3.5 h-3.5" /> Complete Look Breakdown
+              </p>
+              <div className="space-y-2.5">
+                {parseClothingItems(viewingLook.clothing_items).map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-card rounded-xl p-3 border border-border">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-1 border border-white shadow-sm"
+                      style={{ backgroundColor: getHexColors(viewingLook)[i % getHexColors(viewingLook).length] }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blush">{item.type}</span>
+                      <p className="text-sm font-medium text-foreground">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Occasions */}
+            <div className="px-6 mb-4">
+              <div className="flex gap-2 flex-wrap">
+                {viewingLook.occasions.map((occ) => (
+                  <span key={occ} className="text-[10px] font-medium px-2.5 py-1 bg-blush-light text-blush rounded-full">
+                    {OCCASION_LABELS[occ] || occ}
+                  </span>
+                ))}
+                {viewingLook.vibe_filter && (
+                  <span className="text-[10px] font-medium px-2.5 py-1 bg-sand rounded-full text-muted-foreground capitalize">
+                    {viewingLook.vibe_filter}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Why it works */}
+            {viewingLook.why_it_suits && (
+              <div className="px-6 pb-6">
+                <div className="bg-blush-light rounded-2xl p-4">
+                  <p className="text-[10px] font-semibold text-blush mb-1">Why it works for you</p>
+                  <p className="text-sm text-foreground leading-relaxed">{viewingLook.why_it_suits}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
