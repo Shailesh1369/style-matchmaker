@@ -29,6 +29,16 @@ interface SavedLooksBoardProps {
   bodyShape?: string;
 }
 
+const OCCASION_LABELS: Record<string, string> = {
+  casual: "☀️ Casual",
+  date_night: "🌙 Date Night",
+  office: "💼 Office",
+  wedding: "💍 Formal",
+  festival: "🎪 Festival",
+  gym: "🏋️ Gym",
+  travel: "✈️ Travel",
+};
+
 export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape }: SavedLooksBoardProps) {
   const { user } = useAuth();
   const [looks, setLooks] = useState<SavedLook[]>([]);
@@ -38,9 +48,7 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
   const [noteText, setNoteText] = useState("");
   const [viewingLook, setViewingLook] = useState<SavedLook | null>(null);
 
-  useEffect(() => {
-    fetchLooks();
-  }, [user]);
+  useEffect(() => { fetchLooks(); }, [user]);
 
   const fetchLooks = async () => {
     if (!user) return;
@@ -65,10 +73,7 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
   };
 
   const saveNote = async (id: string) => {
-    const { error } = await supabase
-      .from("saved_looks")
-      .update({ notes: noteText })
-      .eq("id", id);
+    const { error } = await supabase.from("saved_looks").update({ notes: noteText }).eq("id", id);
     if (error) toast.error("Failed to save note");
     else {
       setLooks((prev) => prev.map((l) => l.id === id ? { ...l, notes: noteText } : l));
@@ -78,23 +83,9 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
   };
 
   const shareOutfit = async (look: SavedLook) => {
-    const text = `✨ StyleMatch Look: "${look.outfit_name}"\n\n🎨 ${look.color_palette.join(", ")}\n\n👗 Items:\n${look.clothing_items.map((i) => `• ${i}`).join("\n")}\n\n💡 ${look.why_it_suits || ""}`;
-    if (navigator.share) {
-      await navigator.share({ title: look.outfit_name, text });
-    } else {
-      await navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard!");
-    }
-  };
-
-  const OCCASION_LABELS: Record<string, string> = {
-    casual: "☀️ Casual",
-    date_night: "🌙 Date Night",
-    office: "💼 Office",
-    wedding: "💍 Formal",
-    festival: "🎪 Festival",
-    gym: "🏋️ Gym",
-    travel: "✈️ Travel",
+    const text = `✨ Silhouette Look: "${look.outfit_name}"\n\n🎨 ${look.color_palette.join(", ")}\n\n👗 Items:\n${look.clothing_items.map((i) => `• ${i}`).join("\n")}\n\n💡 ${look.why_it_suits || ""}`;
+    if (navigator.share) await navigator.share({ title: look.outfit_name, text });
+    else { await navigator.clipboard.writeText(text); toast.success("Copied to clipboard!"); }
   };
 
   const getHexColors = (look: SavedLook): string[] => {
@@ -102,7 +93,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
     return look.color_palette.map((_, i) => `hsl(${(i * 60 + 340) % 360}, 50%, ${55 + i * 8}%)`);
   };
 
-  // Parse clothing items into the format FashionIllustration expects
   const parseClothingItems = (items: string[]) => {
     return items.map((item) => {
       const [type, ...descParts] = item.split(": ");
@@ -129,27 +119,19 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
           <h1 className="text-2xl font-black">My Style Board</h1>
           <p className="text-xs text-muted-foreground">{looks.length} saved look{looks.length !== 1 ? "s" : ""}</p>
         </div>
-        <button
-          onClick={onNewSearch}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blush text-white text-sm font-semibold"
-        >
+        <button onClick={onNewSearch} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blush text-white text-sm font-semibold">
           <Plus className="w-4 h-4" /> New
         </button>
       </div>
 
       {looks.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
-          <div className="w-24 h-24 rounded-3xl bg-blush-light flex items-center justify-center text-5xl">
-            📌
-          </div>
+          <div className="w-24 h-24 rounded-3xl bg-blush-light flex items-center justify-center text-5xl">📌</div>
           <div className="text-center">
             <h2 className="text-2xl font-black mb-2">Your board is empty</h2>
             <p className="text-muted-foreground">Swipe right on outfit recommendations to save them here</p>
           </div>
-          <Button
-            onClick={onNewSearch}
-            className="h-14 rounded-2xl px-8 text-base font-bold bg-primary text-primary-foreground"
-          >
+          <Button onClick={onNewSearch} className="h-14 rounded-2xl px-8 text-base font-bold bg-primary text-primary-foreground">
             <Sparkles className="w-4 h-4 mr-2" /> Get Style Recommendations
           </Button>
         </div>
@@ -160,17 +142,12 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               const isExpanded = expandedId === look.id;
               const hexColors = getHexColors(look);
               return (
-                <div
-                  key={look.id}
-                  className="break-inside-avoid bg-card rounded-3xl border border-border shadow-card overflow-hidden"
-                >
-                  {/* Color bar */}
+                <div key={look.id} className="break-inside-avoid bg-card rounded-3xl border border-border shadow-card overflow-hidden">
                   <div className="h-2 flex">
                     {hexColors.slice(0, 3).map((color, i) => (
                       <div key={i} className="flex-1" style={{ backgroundColor: color }} />
                     ))}
                   </div>
-
                   <div className="p-5">
                     <div className="mb-3">
                       <h3 className="font-black text-lg leading-tight mb-2">{look.outfit_name}</h3>
@@ -187,7 +164,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                         )}
                       </div>
                     </div>
-
                     <div className="flex gap-2 mb-4">
                       {hexColors.map((hex, i) => (
                         <div key={i} className="flex flex-col items-center gap-1">
@@ -198,7 +174,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                         </div>
                       ))}
                     </div>
-
                     <div className="space-y-1.5 mb-4">
                       {(isExpanded ? look.clothing_items : look.clothing_items.slice(0, 2)).map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
@@ -207,12 +182,9 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                         </div>
                       ))}
                       {!isExpanded && look.clothing_items.length > 2 && (
-                        <p className="text-xs text-muted-foreground pl-3.5">
-                          +{look.clothing_items.length - 2} more items
-                        </p>
+                        <p className="text-xs text-muted-foreground pl-3.5">+{look.clothing_items.length - 2} more items</p>
                       )}
                     </div>
-
                     {isExpanded && (
                       <div className="space-y-3">
                         {look.why_it_suits && (
@@ -232,12 +204,8 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                               autoFocus
                             />
                             <div className="flex gap-2">
-                              <Button size="sm" onClick={() => saveNote(look.id)} className="flex-1 rounded-xl text-xs h-8 bg-blush text-white hover:opacity-90">
-                                Save Note
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setEditingNoteId(null)} className="rounded-xl text-xs h-8">
-                                Cancel
-                              </Button>
+                              <Button size="sm" onClick={() => saveNote(look.id)} className="flex-1 rounded-xl text-xs h-8 bg-blush text-white hover:opacity-90">Save Note</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingNoteId(null)} className="rounded-xl text-xs h-8">Cancel</Button>
                             </div>
                           </div>
                         ) : (
@@ -251,13 +219,15 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
                         )}
                       </div>
                     )}
-
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
                       <button onClick={() => setExpandedId(isExpanded ? null : look.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         {isExpanded ? "Less" : "More"}
                       </button>
-                      <button onClick={() => setViewingLook(look)} className="flex items-center gap-1 text-xs font-semibold text-blush hover:opacity-80">
+                      <button
+                        onClick={() => setViewingLook(look)}
+                        className="flex items-center gap-1 text-xs font-semibold text-blush hover:opacity-80"
+                      >
                         <Eye className="w-3.5 h-3.5" /> View Look
                       </button>
                       <div className="flex-1" />
@@ -276,10 +246,9 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
         </div>
       )}
 
-{/* View Look Modal — fixed render pattern */}
+      {/* View Look Modal — clean conditional render, no IIFE */}
       {viewingLook !== null && (
-        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col animate-in fade-in">
-          {/* Modal header */}
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
             <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
             <button
@@ -291,7 +260,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {/* AI Fashion Illustration */}
             <div className="px-6 pt-4 pb-2">
               <div className="w-full rounded-2xl overflow-hidden border border-border bg-muted/20" style={{ minHeight: "320px" }}>
                 <FashionIllustration
@@ -305,7 +273,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               </div>
             </div>
 
-            {/* Color palette */}
             <div className="px-6 mb-4">
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Color Palette</p>
               <div className="flex gap-3">
@@ -318,7 +285,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               </div>
             </div>
 
-            {/* Clothing items */}
             <div className="px-6 mb-4">
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
                 <Shirt className="w-3.5 h-3.5" /> Complete Look Breakdown
@@ -339,7 +305,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               </div>
             </div>
 
-            {/* Occasions */}
             <div className="px-6 mb-4">
               <div className="flex gap-2 flex-wrap">
                 {viewingLook.occasions.map((occ) => (
@@ -355,7 +320,6 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               </div>
             </div>
 
-            {/* Why it works */}
             {viewingLook.why_it_suits && (
               <div className="px-6 pb-6">
                 <div className="bg-blush-light rounded-2xl p-4">
