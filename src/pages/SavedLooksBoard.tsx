@@ -247,9 +247,8 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
         </div>
       )}
 
-      {/* View Look Modal — clean conditional render, no IIFE */}
-      {viewingLook !== null && (
-        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col">
+      {viewingLook !== null && createPortal(
+        <div className="fixed inset-0 z-[100] bg-background/95 flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
             <h2 className="text-lg font-black">{viewingLook.outfit_name}</h2>
             <button
@@ -330,7 +329,8 @@ export default function SavedLooksBoard({ onBack, onNewSearch, gender, bodyShape
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
